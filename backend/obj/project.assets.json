@@ -89,11 +89,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\pr.csproj",
-      "projectName": "pr",
-      "projectPath": "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\pr.csproj",
+      "projectUniqueName": "C:\\Users\\salvp\\Desktop\\MusicMedia\\Backend\\Backend.csproj",
+      "projectName": "Backend",
+      "projectPath": "C:\\Users\\salvp\\Desktop\\MusicMedia\\Backend\\Backend.csproj",
       "packagesPath": "C:\\Users\\salvp\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\obj\\",
+      "outputPath": "C:\\Users\\salvp\\Desktop\\MusicMedia\\Backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
