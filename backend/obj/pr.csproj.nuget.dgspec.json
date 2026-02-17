@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\salvp\\Desktop\\pr\\backend\\pr.csproj": {}
+    "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\pr.csproj": {}
   },
   "projects": {
-    "C:\\Users\\salvp\\Desktop\\pr\\backend\\pr.csproj": {
+    "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\pr.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\salvp\\Desktop\\pr\\backend\\pr.csproj",
+        "projectUniqueName": "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\pr.csproj",
         "projectName": "pr",
-        "projectPath": "C:\\Users\\salvp\\Desktop\\pr\\backend\\pr.csproj",
+        "projectPath": "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\pr.csproj",
         "packagesPath": "C:\\Users\\salvp\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\salvp\\Desktop\\pr\\backend\\obj\\",
+        "outputPath": "C:\\Users\\salvp\\Desktop\\MusicMedia\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
