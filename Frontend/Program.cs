@@ -1,10 +1,17 @@
 using Frontend.Components;
+using Frontend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+var backendUrl = builder.Configuration["BackendUrl"] ?? "http://localhost:5133";
+builder.Services.AddHttpClient<ArtistApiService>(client =>
+{
+    client.BaseAddress = new Uri(backendUrl);
+});
 
 var app = builder.Build();
 

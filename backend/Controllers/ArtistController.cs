@@ -8,13 +8,7 @@ public class ArtistsController : ControllerBase
     public ArtistsController(ArtistService svc) => _svc = svc;
 
     [HttpGet]
-    public IActionResult Search(
-        [FromQuery] string? name,
-        [FromQuery] List<string>? genres,
-        [FromQuery] List<string>? languages,
-        [FromQuery] int? yearFrom,
-        [FromQuery] int? yearTo,
-        [FromQuery] bool onlyActive = false)
+    public IActionResult Search([FromQuery] string? name,[FromQuery] List<string>? genres,[FromQuery] List<string>? languages,[FromQuery] int? yearFrom,[FromQuery] int? yearTo,[FromQuery] bool onlyActive = false)
     {
         return Ok(_svc.Search(name, genres, languages, yearFrom, yearTo, onlyActive));
     }
@@ -27,8 +21,14 @@ public class ArtistsController : ControllerBase
     }
 
     [HttpGet("genres")]
-    public IActionResult GetGenres() => Ok(_svc.GetGenres());
+    public IActionResult GetGenres()
+    {
+        return Ok(_svc.GetGenres());
+    }
 
     [HttpGet("languages")]
-    public IActionResult GetLanguages() => Ok(_svc.GetLanguages());
+    public IActionResult GetLanguages()
+    {
+        return Ok(_svc.GetLanguages());
+    } 
 }

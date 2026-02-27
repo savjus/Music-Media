@@ -1,0 +1,286 @@
+@page "/artists"
+@rendermode InteractiveServer
+@inject ArtistApiService Api
+
+<PageTitle>Artist Search</PageTitle>
+
+<div class="artist-search-page">
+
+    @* ── Search bar ── *@
+    <div class="search-bar-row mb-3 d-flex gap-2">
+        <input class="form-control"
+               type="text"
+               placeholder="Search by artist name…"
+               @bind="_nameQuery"
+               @bind:event="oninput"
+               @onkeydown="OnNameKeyDown" />
+        <button class="btn btn-primary" @onclick="RunSearch">Search</button>
+        <button class="btn btn-outline-secondary" @onclick="ClearAll">Clear</button>
+    </div>
+
+    @* ── Filters toggle ── *@
+    <button class="btn btn-sm btn-outline-dark mb-3" @onclick="ToggleFilters">
+        @(_filtersOpen ? "Hide filters ▲" : "Show filters ▼")
+    </button>
+
+    @if (_filtersOpen)
+    {
+        <div class="filters-panel card p-3 mb-3">
+            <div class="row g-3">
+
+                @* PROJ-7 – Year range *@
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Active from</label>
+                    <input class="form-control" type="number" placeholder="e.g. 1990"
+                           @bind="_yearFrom" @bind:event="oninput" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Active to</label>
+                    <input class="form-control" type="number" placeholder="e.g. 2010"
+                           @bind="_yearTo" @bind:event="oninput" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="onlyActive"
+                               @bind="_onlyActive" />
+                        <label class="form-check-label" for="onlyActive">Only currently active</label>
+                    </div>
+                </div>
+
+                @* PROJ-8 – Language checkboxes *@
+                @if (_availableLanguages.Count > 0)
+                {
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Language</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var lang in _availableLanguages)
+                            {
+                                var captured = lang;
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="lang-@captured"
+                                           checked="@_selectedLanguages.Contains(captured)"
+                                           @onchange="e => ToggleItem(_selectedLanguages, captured, (bool)e.Value!)" />
+                                    <label class="form-check-label" for="lang-@captured">@captured</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Genre checkboxes *@
+                @if (_availableGenres.Count > 0)
+                {
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Genre</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var genre in _availableGenres)
+                            {
+                                var captured = genre;
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="genre-@captured"
+                                           checked="@_selectedGenres.Contains(captured)"
+                                           @onchange="e => ToggleItem(_selectedGenres, captured, (bool)e.Value!)" />
+                                    <label class="form-check-label" for="genre-@captured">@captured</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-primary" @onclick="RunSearch">Apply filters</button>
+                <button class="btn btn-outline-secondary" @onclick="ClearFilters">Reset filters</button>
+            </div>
+        </div>
+    }
+
+    @* ── Active filter badges ── *@
+    @if (HasActiveFilters)
+    {
+        <div class="active-filters mb-3 d-flex flex-wrap gap-1 align-items-center">
+            <span class="text-muted me-1">Active:</span>
+            @if (!string.IsNullOrWhiteSpace(_nameQuery))
+            {
+                <span class="badge bg-secondary">
+                    Name: @_nameQuery
+                    <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _nameQuery = string.Empty; await RunSearch(); }" />
+                </span>
+            }
+            @if (_yearFrom.HasValue)
+            {
+                <span class="badge bg-secondary">
+                    From: @_yearFrom
+                    <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _yearFrom = null; await RunSearch(); }" />
+                </span>
+            }
+            @if (_yearTo.HasValue)
+            {
+                <span class="badge bg-secondary">
+                    To: @_yearTo
+                    <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _yearTo = null; await RunSearch(); }" />
+                </span>
+            }
+            @if (_onlyActive)
+            {
+                <span class="badge bg-secondary">
+                    Only active
+                    <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _onlyActive = false; await RunSearch(); }" />
+                </span>
+            }
+            @foreach (var lang in _selectedLanguages.ToList())
+            {
+                var l = lang;
+                <span class="badge bg-info text-dark">
+                    @l
+                    <button class="btn-close btn-sm ms-1" @onclick="async () => { _selectedLanguages.Remove(l); await RunSearch(); }" />
+                </span>
+            }
+            @foreach (var genre in _selectedGenres.ToList())
+            {
+                var g = genre;
+                <span class="badge bg-warning text-dark">
+                    @g
+                    <button class="btn-close btn-sm ms-1" @onclick="async () => { _selectedGenres.Remove(g); await RunSearch(); }" />
+                </span>
+            }
+        </div>
+    }
+
+    @* ── Results ── *@
+    @if (_loading)
+    {
+        <p class="text-muted">Loading…</p>
+    }
+    else if (_results.Count == 0)
+    {
+        <p class="text-muted">No artists found.</p>
+    }
+    else
+    {
+        <p class="text-muted mb-2">@_results.Count result(s)</p>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Genre</th>
+                        <th>Language</th>
+                        <th>Country</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var artist in _results)
+                    {
+                        <tr>
+                            <td><strong>@artist.Name</strong></td>
+                            <td>@artist.Genre</td>
+                            <td>@artist.Language</td>
+                            <td>@artist.Country</td>
+                            <td>
+                                @if (artist.ActiveTo.HasValue)
+                                {
+                                    <span>@artist.ActiveFrom – @artist.ActiveTo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">@artist.ActiveFrom – present</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+</div>
+
+@code {
+    private string _nameQuery = string.Empty;
+    private int? _yearFrom;
+    private int? _yearTo;
+    private bool _onlyActive;
+    private bool _filtersOpen;
+    private bool _loading;
+
+    private List<string> _availableGenres = [];
+    private List<string> _availableLanguages = [];
+    private HashSet<string> _selectedGenres = [];
+    private HashSet<string> _selectedLanguages = [];
+    private List<ArtistDto> _results = [];
+
+    private bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(_nameQuery) ||
+        _yearFrom.HasValue ||
+        _yearTo.HasValue ||
+        _onlyActive ||
+        _selectedLanguages.Count > 0 ||
+        _selectedGenres.Count > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var genresTask = Api.GetGenresAsync();
+        var langsTask = Api.GetLanguagesAsync();
+        await Task.WhenAll(genresTask, langsTask);
+        _availableGenres = genresTask.Result;
+        _availableLanguages = langsTask.Result;
+        await RunSearch();
+    }
+
+    private async Task RunSearch()
+    {
+        _loading = true;
+        _results = await Api.SearchAsync(
+            _nameQuery,
+            _selectedGenres.Count > 0 ? [.. _selectedGenres] : null,
+            _selectedLanguages.Count > 0 ? [.. _selectedLanguages] : null,
+            _yearFrom,
+            _yearTo,
+            _onlyActive);
+        _loading = false;
+    }
+
+    private async Task OnNameKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await RunSearch();
+        }
+    }
+
+    private async Task ClearAll()
+    {
+        _nameQuery = string.Empty;
+        _yearFrom = null;
+        _yearTo = null;
+        _onlyActive = false;
+        _selectedGenres.Clear();
+        _selectedLanguages.Clear();
+        await RunSearch();
+    }
+
+    private async Task ClearFilters()
+    {
+        _yearFrom = null;
+        _yearTo = null;
+        _onlyActive = false;
+        _selectedGenres.Clear();
+        _selectedLanguages.Clear();
+        await RunSearch();
+    }
+
+    private async Task ToggleItem(HashSet<string> set, string value, bool add)
+    {
+        if (add) set.Add(value);
+        else set.Remove(value);
+        await RunSearch();
+    }
+
+    private void ToggleFilters() 
+    {
+        _filtersOpen = !_filtersOpen;
+    } 
+}
