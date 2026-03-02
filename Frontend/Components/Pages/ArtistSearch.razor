@@ -51,7 +51,7 @@
                             @foreach (var lang in _availableLanguages)
                             {
                                 var captured = lang;
-                                <Checkbox Id="lang-@captured"
+                                <Checkbox Id="@($"genre-{captured}")"
                                           Label="@captured"
                                           Inline="true"
                                           Checked="_selectedLanguages.Contains(captured)"
@@ -70,7 +70,7 @@
                             @foreach (var genre in _availableGenres)
                             {
                                 var captured = genre;
-                                <Checkbox Id="genre-@captured"
+                                <Checkbox Id="@($"genre-{captured}")"
                                           Label="@captured"
                                           Inline="true"
                                           Checked="_selectedGenres.Contains(captured)"
