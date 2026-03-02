@@ -11,7 +11,6 @@
         <SearchBar @bind-Value="_nameQuery"
                    Placeholder="Search by artist name…"
                    OnSearch="RunSearch" />
-        <button class="btn btn-outline-secondary" @onclick="ClearAll">Clear all</button>
     </div>
 
     @* ── Filters toggle ── *@
@@ -234,17 +233,6 @@
             _yearTo,
             _onlyActive);
         _loading = false;
-    }
-
-    private async Task ClearAll()
-    {
-        _nameQuery = string.Empty;
-        _yearFrom = null;
-        _yearTo = null;
-        _onlyActive = false;
-        _selectedGenres.Clear();
-        _selectedLanguages.Clear();
-        await RunSearch();
     }
 
     private async Task ClearFilters()
