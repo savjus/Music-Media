@@ -1,0 +1,23 @@
+@* Reusable Checkbox for filter panel: checked/unchecked, label, onChange. *@
+<div class="form-check @(Inline ? "form-check-inline" : "")">
+    <input class="form-check-input"
+           type="checkbox"
+           id="@Id"
+           checked="@Checked"
+           @onchange="OnChangeHandler" />
+    <label class="form-check-label" for="@Id">@Label</label>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public bool Checked { get; set; }
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+    [Parameter] public bool Inline { get; set; }
+
+    private async Task OnChangeHandler(ChangeEventArgs e)
+    {
+        var value = e.Value is bool b ? b : false;
+        await CheckedChanged.InvokeAsync(value);
+    }
+}

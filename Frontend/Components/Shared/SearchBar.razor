@@ -1,0 +1,57 @@
+@* Search bar UI: text input, optional inline clear (×), optional Search button. Responsive, app-style. *@
+<div class="search-bar-row mb-3 d-flex flex-wrap gap-2 align-items-center">
+    <div class="search-bar-input-wrapper position-relative flex-grow-1" style="min-width: 200px;">
+        <input class="form-control pe-4"
+               type="text"
+               placeholder="@Placeholder"
+               value="@Value"
+               @oninput="OnInput"
+               @onkeydown="OnKeyDown" />
+        @if (ShowClearButton && !string.IsNullOrWhiteSpace(Value))
+        {
+            <button type="button"
+                    class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-muted text-decoration-none p-0 me-2"
+                    style="font-size: 1.25rem; line-height: 1;"
+                    @onclick="ClearAndSearch"
+                    aria-label="Clear search">
+                ×
+            </button>
+        }
+    </div>
+    @if (ShowSearchButton)
+    {
+        <button class="btn btn-primary" @onclick="InvokeSearch">Search</button>
+    }
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Search…";
+    [Parameter] public EventCallback OnSearch { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; } = true;
+    [Parameter] public bool ShowSearchButton { get; set; } = true;
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        var v = e.Value?.ToString() ?? "";
+        await ValueChanged.InvokeAsync(v);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await InvokeSearch();
+    }
+
+    private async Task ClearAndSearch()
+    {
+        await ValueChanged.InvokeAsync("");
+        await InvokeSearch();
+    }
+
+    private async Task InvokeSearch()
+    {
+        await OnSearch.InvokeAsync();
+    }
+}
