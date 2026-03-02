@@ -6,10 +6,15 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+        <div class="top-row px-4 d-flex justify-content-end align-items-center gap-2">
+            <NavLink class="btn btn-outline-secondary" href="profile">
+                Profile
+            </NavLink>
 
+            <NavLink class="btn btn-outline-primary" href="login">
+                Login
+            </NavLink>
+        </div>
         <article class="content px-4">
             @Body
         </article>
