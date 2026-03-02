@@ -6,16 +6,12 @@
 
 <div class="artist-search-page">
 
-    @* ── Search bar ── *@
-    <div class="search-bar-row mb-3 d-flex gap-2">
-        <input class="form-control"
-               type="text"
-               placeholder="Search by artist name…"
-               @bind="_nameQuery"
-               @bind:event="oninput"
-               @onkeydown="OnNameKeyDown" />
-        <button class="btn btn-primary" @onclick="RunSearch">Search</button>
-        <button class="btn btn-outline-secondary" @onclick="ClearAll">Clear</button>
+    @* ── Search bar (with inline clear × when there is text) ── *@
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+        <SearchBar @bind-Value="_nameQuery"
+                   Placeholder="Search by artist name…"
+                   OnSearch="RunSearch" />
+        <button class="btn btn-outline-secondary" @onclick="ClearAll">Clear all</button>
     </div>
 
     @* ── Filters toggle ── *@
@@ -40,11 +36,10 @@
                            @bind="_yearTo" @bind:event="oninput" />
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="onlyActive"
-                               @bind="_onlyActive" />
-                        <label class="form-check-label" for="onlyActive">Only currently active</label>
-                    </div>
+                    <Checkbox Id="onlyActive"
+                              Label="Only currently active"
+                              Checked="_onlyActive"
+                              CheckedChanged="OnOnlyActiveChanged" />
                 </div>
 
                 @* PROJ-8 – Language checkboxes *@
@@ -56,12 +51,11 @@
                             @foreach (var lang in _availableLanguages)
                             {
                                 var captured = lang;
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="lang-@captured"
-                                           checked="@_selectedLanguages.Contains(captured)"
-                                           @onchange="e => ToggleItem(_selectedLanguages, captured, (bool)e.Value!)" />
-                                    <label class="form-check-label" for="lang-@captured">@captured</label>
-                                </div>
+                                <Checkbox Id="lang-@captured"
+                                          Label="@captured"
+                                          Inline="true"
+                                          Checked="_selectedLanguages.Contains(captured)"
+                                          CheckedChanged="e => ToggleItem(_selectedLanguages, captured, e)" />
                             }
                         </div>
                     </div>
@@ -76,12 +70,11 @@
                             @foreach (var genre in _availableGenres)
                             {
                                 var captured = genre;
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="genre-@captured"
-                                           checked="@_selectedGenres.Contains(captured)"
-                                           @onchange="e => ToggleItem(_selectedGenres, captured, (bool)e.Value!)" />
-                                    <label class="form-check-label" for="genre-@captured">@captured</label>
-                                </div>
+                                <Checkbox Id="genre-@captured"
+                                          Label="@captured"
+                                          Inline="true"
+                                          Checked="_selectedGenres.Contains(captured)"
+                                          CheckedChanged="e => ToggleItem(_selectedGenres, captured, e)" />
                             }
                         </div>
                     </div>
@@ -243,14 +236,6 @@
         _loading = false;
     }
 
-    private async Task OnNameKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await RunSearch();
-        }
-    }
-
     private async Task ClearAll()
     {
         _nameQuery = string.Empty;
@@ -279,8 +264,14 @@
         await RunSearch();
     }
 
-    private void ToggleFilters() 
+    private void ToggleFilters()
     {
         _filtersOpen = !_filtersOpen;
-    } 
+    }
+
+    private async Task OnOnlyActiveChanged(bool value)
+    {
+        _onlyActive = value;
+        await RunSearch();
+    }
 }
