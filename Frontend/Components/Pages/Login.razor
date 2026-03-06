@@ -1,4 +1,5 @@
-@page "/login"
+﻿@page "/login"
+@rendermode InteractiveServer
 
 <h3>Enter your information to continue</h3>
 
@@ -11,11 +12,14 @@
                placeholder="Enter your email" />
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password"
+    <div class="input-group mb-3">
+        <input type="@PasswordInputType"
                class="form-control"
                placeholder="Enter your password" />
+
+        <button class="btn btn-outline-secondary" type="button" @onclick="TogglePassword">
+            👁
+        </button>
     </div>
 
     <button class="btn btn-primary w-100 mb-2">
@@ -27,4 +31,20 @@
         <NavLink href="/register">Register</NavLink>
     </p>
 
+    <p class="text-muted small">
+        Forgot your password?
+        <NavLink href="/forgot-password">Reset it here</NavLink>
+    </p>
+
 </div>
+
+@code {
+    private bool showPassword = false;
+
+    private string PasswordInputType => showPassword ? "text" : "password";
+
+    private void TogglePassword()
+    {
+        showPassword = !showPassword;
+    }
+}
