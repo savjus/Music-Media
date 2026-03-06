@@ -1,5 +1,50 @@
-@page "/login"
+﻿@page "/login"
+@rendermode InteractiveServer
 
-<h3>Log In</h3>
+<h3>Enter your information to continue</h3>
 
-<p>You will be able to log in here :).</p>
+<div class="card p-4 mt-3" style="max-width:400px">
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email"
+               class="form-control"
+               placeholder="Enter your email" />
+    </div>
+
+    <div class="input-group mb-3">
+        <input type="@PasswordInputType"
+               class="form-control"
+               placeholder="Enter your password" />
+
+        <button class="btn btn-outline-secondary" type="button" @onclick="TogglePassword">
+            👁
+        </button>
+    </div>
+
+    <button class="btn btn-primary w-100 mb-2">
+        Continue
+    </button>
+
+    <p class="text-muted small">
+        Don't have an account?
+        <NavLink href="/register">Register</NavLink>
+    </p>
+
+    <p class="text-muted small">
+        Forgot your password?
+        <NavLink href="/forgot-password">Reset it here</NavLink>
+    </p>
+
+</div>
+
+@code {
+    private bool showPassword = false;
+
+    private string PasswordInputType => showPassword ? "text" : "password";
+
+    private void TogglePassword()
+    {
+        showPassword = !showPassword;
+    }
+}
