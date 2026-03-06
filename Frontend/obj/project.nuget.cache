@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "kPYxw39DBZo=",
+  "dgSpecHash": "oX9UdWt5fLQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\salvp\\Desktop\\MusicMedia\\Frontend\\Frontend.csproj",
+  "projectFilePath": "C:\\Users\\dovyd\\Desktop\\GitHubUniveras\\Music-Media\\Frontend\\Frontend.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\salvp\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.0-preview.2.25164.1\\microsoft.aspnetcore.app.internal.assets.10.0.0-preview.2.25164.1.nupkg.sha512"
+    "C:\\Users\\dovyd\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.3\\microsoft.aspnetcore.app.internal.assets.10.0.3.nupkg.sha512"
   ],
   "logs": []
 }

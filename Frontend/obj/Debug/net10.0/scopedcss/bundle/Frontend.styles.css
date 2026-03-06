@@ -1,4 +1,4 @@
-/* _content/Frontend/Components/Layout/MainLayout.razor.rz.scp.css */
+/* /Components/Layout/MainLayout.razor.rz.scp.css */
 .page[b-cj3fj28uav] {
     position: relative;
     display: flex;
@@ -97,7 +97,7 @@ main[b-cj3fj28uav] {
         right: 0.75rem;
         top: 0.5rem;
     }
-/* _content/Frontend/Components/Layout/NavMenu.razor.rz.scp.css */
+/* /Components/Layout/NavMenu.razor.rz.scp.css */
 .navbar-toggler[b-ftcrkoicqg] {
     appearance: none;
     cursor: pointer;
@@ -203,7 +203,7 @@ main[b-cj3fj28uav] {
         overflow-y: auto;
     }
 }
-/* _content/Frontend/Components/Layout/ReconnectModal.razor.rz.scp.css */
+/* /Components/Layout/ReconnectModal.razor.rz.scp.css */
 .components-reconnect-first-attempt-visible[b-r2f2ppjcxf],
 .components-reconnect-repeated-attempt-visible[b-r2f2ppjcxf],
 .components-reconnect-failed-visible[b-r2f2ppjcxf],
