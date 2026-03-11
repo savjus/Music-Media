@@ -13,6 +13,12 @@ builder.Services.AddHttpClient<ArtistApiService>(client =>
     client.BaseAddress = new Uri(backendUrl);
 });
 
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddHttpClient("auth", client =>
+{
+    client.BaseAddress = new Uri(backendUrl);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,5 +1,96 @@
 @page "/register"
+@rendermode InteractiveServer
+@inject AuthService Auth
+@inject NavigationManager Nav
 
 <h3>Register</h3>
 
-<p>You will be able to register here.</p>
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-2" style="max-width:400px">@errorMessage</div>
+}
+
+<div class="card p-4 mt-3" style="max-width:400px">
+    <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text"
+               class="form-control"
+               placeholder="Choose a username"
+               @bind="username" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email"
+               class="form-control"
+               placeholder="Enter your email"
+               @bind="email" />
+    </div>
+
+    <div class="input-group mb-3">
+        <input type="@PasswordInputType"
+               class="form-control"
+               placeholder="Create a password"
+               @bind="password" />
+        <button class="btn btn-outline-secondary" type="button" @onclick="TogglePassword">👁</button>
+    </div>
+
+    <div class="input-group mb-3">
+        <input type="@PasswordInputType"
+               class="form-control"
+               placeholder="Confirm your password"
+               @bind="confirmPassword" />
+        <button class="btn btn-outline-secondary" type="button" @onclick="TogglePassword">👁</button>
+    </div>
+
+    <button class="btn btn-primary w-100 mb-2" @onclick="HandleRegister">
+        Register
+    </button>
+
+    <p class="text-muted small">
+        Already have an account?
+        <NavLink href="/login">Log in</NavLink>
+    </p>
+
+</div>
+
+@code {
+    private string username = "";
+    private string email = "";
+    private string password = "";
+    private string confirmPassword = "";
+    private bool showPassword = false;
+    private string? errorMessage;
+
+    private string PasswordInputType => showPassword ? "text" : "password";
+
+    private void TogglePassword() => showPassword = !showPassword;
+
+    private async Task HandleRegister()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(username) ||
+            string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Please fill in all fields.";
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        if (await Auth.RegisterAsync(username, email, password))
+        {
+            Nav.NavigateTo("/login");
+        }   
+        else
+        {
+            errorMessage = "An account with this email already exists.";
+        }
+    }
+}
