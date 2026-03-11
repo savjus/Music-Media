@@ -1,5 +1,6 @@
 @page "/register"
 @rendermode InteractiveServer
+@inject AuthService Auth
 @inject NavigationManager Nav
 
 <h3>Register</h3>
@@ -69,4 +70,28 @@
     private string PasswordInputType => showPassword ? "text" : "password";
 
     private void TogglePassword() => showPassword = !showPassword;
+
+    private async Task HandleRegister()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(username) ||
+            string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Please fill in all fields.";
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        if (await Auth.RegisterAsync(username, email, password))
+            Nav.NavigateTo("/login");
+        else
+            errorMessage = "An account with this email already exists.";
+    }
 }
