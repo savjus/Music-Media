@@ -111,7 +111,7 @@ public class AuthService
         return el.TryGetProperty(prop, out var v) ? v.GetString() : null;
     }
 
-    // Internal DTO matching the backend LoginResponse
+    // DTO backend responsams 
     private class LoginResult
     {
         public string Token    { get; set; } = "";

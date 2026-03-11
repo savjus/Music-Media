@@ -11,8 +11,6 @@
 }
 
 <div class="card p-4 mt-3" style="max-width:400px">
-
-    @* PROJ-84: username input *@
     <div class="mb-3">
         <label class="form-label">Username</label>
         <input type="text"
@@ -21,7 +19,6 @@
                @bind="username" />
     </div>
 
-    @* PROJ-85: email input *@
     <div class="mb-3">
         <label class="form-label">Email</label>
         <input type="email"
@@ -30,7 +27,6 @@
                @bind="email" />
     </div>
 
-    @* PROJ-86: password inputs *@
     <div class="input-group mb-3">
         <input type="@PasswordInputType"
                class="form-control"
@@ -47,7 +43,6 @@
         <button class="btn btn-outline-secondary" type="button" @onclick="TogglePassword">👁</button>
     </div>
 
-    @* PROJ-3: register action *@
     <button class="btn btn-primary w-100 mb-2" @onclick="HandleRegister">
         Register
     </button>
@@ -90,8 +85,12 @@
         }
 
         if (await Auth.RegisterAsync(username, email, password))
+        {
             Nav.NavigateTo("/login");
+        }   
         else
+        {
             errorMessage = "An account with this email already exists.";
+        }
     }
 }

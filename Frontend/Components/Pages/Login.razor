@@ -1,7 +1,15 @@
 ﻿@page "/login"
 @rendermode InteractiveServer
+@inject Frontend.Services.AuthService Auth
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <h3>Enter your information to continue</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-2" style="max-width:400px">@errorMessage</div>
+}
 
 <div class="card p-4 mt-3" style="max-width:400px">
 
@@ -9,20 +17,27 @@
         <label class="form-label">Email</label>
         <input type="email"
                class="form-control"
-               placeholder="Enter your email" />
+               placeholder="Enter your email"
+               @bind="email" />
     </div>
 
     <div class="input-group mb-3">
         <input type="@PasswordInputType"
                class="form-control"
-               placeholder="Enter your password" />
+               placeholder="Enter your password"
+               @bind="password" />
 
         <button class="btn btn-outline-secondary" type="button" @onclick="TogglePassword">
             👁
         </button>
     </div>
 
-    <button class="btn btn-primary w-100 mb-2">
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="rememberMe" @bind="rememberMe" />
+        <label class="form-check-label" for="rememberMe">Remember me</label>
+    </div>
+
+    <button class="btn btn-primary w-100 mb-2" @onclick="HandleLogin">
         Continue
     </button>
 
@@ -39,12 +54,64 @@
 </div>
 
 @code {
+    private string email = "";
+    private string password = "";
+    private bool rememberMe = false;
     private bool showPassword = false;
+    private string? errorMessage;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        if (Auth.IsLoggedIn)
+        {
+            Nav.NavigateTo("/profile");
+            return;
+        }
+
+        var hint = await JS.InvokeAsync<string?>("localStorage.getItem", "email_hint");
+        if (!string.IsNullOrEmpty(hint))
+        {
+            email = hint;
+            StateHasChanged();
+        }
+    }
 
     private string PasswordInputType => showPassword ? "text" : "password";
 
-    private void TogglePassword()
+    private void TogglePassword() 
     {
         showPassword = !showPassword;
+    } 
+
+    private async Task HandleLogin()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Please fill in all fields.";
+            return;
+        }
+
+        if (await Auth.LoginAsync(email, password, rememberMe))
+        {
+            if (rememberMe && Auth.Token != null)
+            {
+                await JS.InvokeVoidAsync("localStorage.setItem", "auth_token", Auth.Token);
+                await JS.InvokeVoidAsync("localStorage.setItem", "email_hint", email);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "auth_token");
+                await JS.InvokeVoidAsync("localStorage.removeItem", "email_hint");
+            }
+            Nav.NavigateTo("/profile");
+        }
+        else
+        {
+            errorMessage = "Invalid email or password.";
+        }
     }
 }

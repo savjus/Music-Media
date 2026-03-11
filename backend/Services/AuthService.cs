@@ -11,7 +11,7 @@ public class AuthService
     private readonly List<UserAccount> _users =
     [
         new UserAccount { Id = 1, Username = "admin",    Email = "admin@musicmedia.com", Password = "Admin123!" },
-        new UserAccount { Id = 2, Username = "testuser", Email = "user@example.com",     Password = "Test123!"  },
+        new UserAccount { Id = 2, Username = "test", Email = "test",     Password = "test"  },
     ];
 
     public AuthService(IConfiguration config) => _config = config;
