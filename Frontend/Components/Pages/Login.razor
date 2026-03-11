@@ -70,6 +70,14 @@
             return;
         }
 
+        var storedToken = await JS.InvokeAsync<string?>("localStorage.getItem", "auth_token")
+                       ?? await JS.InvokeAsync<string?>("sessionStorage.getItem", "auth_token");
+        if (!string.IsNullOrEmpty(storedToken) && Auth.TryRestoreToken(storedToken))
+        {
+            Nav.NavigateTo("/profile");
+            return;
+        }
+
         var hint = await JS.InvokeAsync<string?>("localStorage.getItem", "email_hint");
         if (!string.IsNullOrEmpty(hint))
         {
@@ -101,9 +109,11 @@
             {
                 await JS.InvokeVoidAsync("localStorage.setItem", "auth_token", Auth.Token);
                 await JS.InvokeVoidAsync("localStorage.setItem", "email_hint", email);
+                await JS.InvokeVoidAsync("sessionStorage.removeItem", "auth_token");
             }
             else
             {
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "auth_token", Auth.Token);
                 await JS.InvokeVoidAsync("localStorage.removeItem", "auth_token");
                 await JS.InvokeVoidAsync("localStorage.removeItem", "email_hint");
             }

@@ -22,7 +22,9 @@ public class AuthController : ControllerBase
     public IActionResult Register([FromBody] RegisterRequest request)
     {
         if (!_svc.Register(request.Username, request.Email, request.Password))
+        {
             return Conflict("Email already in use.");
+        }
 
         return Ok();
     }
