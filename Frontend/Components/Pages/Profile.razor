@@ -1,7 +1,111 @@
 @page "/profile"
+@rendermode InteractiveServer
+@using Frontend.Components.Pages
+@inject Frontend.Services.AuthService Auth
+@inject Frontend.Services.ProfileApiService ProfileApi
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<h1>Future profile page</h1>
+<h3>Your profile</h3>
 
-<p>For now atleast it redirects you to something :p</p>
+@if (!isLoaded)
+{
+    <p class="text-muted">Loading profile...</p>
+}
+else
+{
+    <div class="card mb-3 p-3">
+        <h5>@(profile?.Profile?.DisplayName ?? "Name not set") (@(profile?.Profile?.DefaultLanguage ?? "-"))</h5>
+        <p class="mb-1">@(profile?.Profile?.Bio ?? "No bio available")</p>
+        <p class="mb-1">
+            <strong>Genres:</strong>
+            @(profile?.Profile?.Genres != null ? string.Join(", ", profile.Profile.Genres) : "None")
+        </p>
+        <p class="mb-0">
+            @if (!string.IsNullOrWhiteSpace(profile?.Profile?.SpotifyUrl))
+            {
+                <a href="@profile.Profile.SpotifyUrl" target="_blank" class="me-2">Spotify</a>
+            }
+            @if (!string.IsNullOrWhiteSpace(profile?.Profile?.YouTubeUrl))
+            {
+                <a href="@profile.Profile.YouTubeUrl" target="_blank">YouTube</a>
+            }
+        </p>
+    </div>
 
-<hr />
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "overview" ? "active" : "")" @onclick="@(() => activeTab = "overview")">Overview</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "albums" ? "active" : "")" @onclick="@(() => activeTab = "albums")">Albums</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "tracks" ? "active" : "")" @onclick="@(() => activeTab = "tracks")">Tracks</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "tours" ? "active" : "")" @onclick="@(() => activeTab = "tours")">Tours</button>
+        </li>
+    </ul>
+
+    @switch (activeTab)
+    {
+        case "albums":
+            <AlbumsSection Albums="@(profile?.Albums ?? new())" />
+            break;
+        case "tracks":
+            <TracksSection Tracks="@(profile?.Tracks ?? new())" Albums="@(profile?.Albums ?? new())" />
+            break;
+        case "tours":
+            <ToursSection Tours="@(profile?.Tours ?? new())" />
+            break;
+        default:
+            <OverviewSection Albums="@(profile?.Albums ?? new())" Tracks="@(profile?.Tracks ?? new())" Tours="@(profile?.Tours ?? new())" />
+            break;
+    }
+}
+
+@code {
+    private ProfileResponseDto? profile;
+    private bool isLoaded;
+    private string activeTab = "overview";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!Auth.IsLoggedIn)
+            {
+                var storedToken = await JS.InvokeAsync<string?>("localStorage.getItem", "auth_token")
+                                   ?? await JS.InvokeAsync<string?>("sessionStorage.getItem", "auth_token");
+
+                if (!string.IsNullOrEmpty(storedToken) && Auth.TryRestoreToken(storedToken))
+                {
+                    // Session restored
+                }
+                else
+                {
+                    Nav.NavigateTo("/login");
+                    return;
+                }
+            }
+
+            try 
+            {
+                profile = await ProfileApi.GetMyProfileAsync();
+            }
+            catch (Exception)
+            {
+                // Handle API error if needed
+            }
+            finally 
+            {
+                isLoaded = true;
+                StateHasChanged();
+            }
+        }
+    }
+
+    // Nested classes (OverviewSection, AlbumsSection, etc.) follow below...
+    // Paste your existing static component classes here, ensuring they use the passed parameters.
+}

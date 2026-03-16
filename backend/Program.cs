@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<ArtistService>();
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<UserProfileService>();
 builder.Services.AddControllers();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

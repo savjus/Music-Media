@@ -1,0 +1,45 @@
+@using Frontend.Models
+
+<div>
+    @if (Tours.Count == 0)
+    {
+        <p class="text-muted">No tours found.</p>
+    }
+    else
+    {
+        @if (UpcomingTours.Any())
+        {
+            <h5>Upcoming tours</h5>
+            <ul class="list-group mb-3">
+                @foreach (var t in UpcomingTours)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @t.Name – @t.Location
+                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() – @t.EndDate.ToShortDateString()</span>
+                    </li>
+                }
+            </ul>
+        }
+
+        @if (PastTours.Any())
+        {
+            <h5>Past tours</h5>
+            <ul class="list-group mb-3">
+                @foreach (var t in PastTours)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @t.Name – @t.Location
+                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() – @t.EndDate.ToShortDateString()</span>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public List<TourDto> Tours { get; set; } = new();
+
+    private IEnumerable<TourDto> UpcomingTours => Tours.Where(t => !t.IsPast);
+    private IEnumerable<TourDto> PastTours => Tours.Where(t => t.IsPast);
+}
