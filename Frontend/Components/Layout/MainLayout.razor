@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
-
+@inject Frontend.Services.AuthService Auth
+@inject IJSRuntime JS
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -7,14 +8,23 @@
 
     <main>
         <div class="top-row px-4 d-flex justify-content-end align-items-center gap-2">
-            <NavLink class="btn btn-outline-secondary" href="profile">
-                Profile
-            </NavLink>
+    @if (Auth.IsLoggedIn)
+    {
+        <NavLink class="btn btn-outline-secondary" href="profile">
+            Profile
+        </NavLink>
 
-            <NavLink class="btn btn-outline-primary" href="login">
-                Login
-            </NavLink>
-        </div>
+        <button class="btn btn-outline-danger" @onclick="HandleLogout">
+            Logout
+        </button>
+    }
+    else
+    {
+        <NavLink class="btn btn-outline-primary" href="login">
+            Login
+        </NavLink>
+    }
+</div>
         <article class="content px-4">
             @Body
         </article>
@@ -27,3 +37,28 @@
     <span class="dismiss">🗙</span>
 </div>
 <ReconnectModal />
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || Auth.IsLoggedIn)
+        {
+            return;
+        }
+
+        var storedToken = await JS.InvokeAsync<string?>("localStorage.getItem", "auth_token")
+                           ?? await JS.InvokeAsync<string?>("sessionStorage.getItem", "auth_token");
+        if (!string.IsNullOrEmpty(storedToken))
+        {
+            Auth.TryRestoreToken(storedToken);
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        Auth.Logout();
+        await JS.InvokeVoidAsync("localStorage.removeItem", "auth_token");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "email_hint");
+        await JS.InvokeVoidAsync("sessionStorage.removeItem", "auth_token");
+    }
+}
