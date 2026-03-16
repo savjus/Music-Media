@@ -18,6 +18,7 @@ builder.Services.AddHttpClient("auth", client =>
 {
     client.BaseAddress = new Uri(backendUrl);
 });
+builder.Services.AddScoped<ProfileApiService>();
 
 var app = builder.Build();
 

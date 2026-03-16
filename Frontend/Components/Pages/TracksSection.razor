@@ -1,0 +1,51 @@
+@using Frontend.Models
+
+<div>
+    @if (Tracks.Count == 0)
+    {
+        <p class="text-muted">No tracks found.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Album</th>
+                        <th>Genre</th>
+                        <th>Language</th>
+                        <th>Length</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Tracks)
+                    {
+                        var albumTitle = t.AlbumId.HasValue 
+                            ? Albums.FirstOrDefault(a => a.Id == t.AlbumId.Value)?.Title ?? "-" 
+                            : "-";
+                        <tr>
+                            <td>@t.Title</td>
+                            <td>@albumTitle</td>
+                            <td>@t.Genre</td>
+                            <td>@t.Language</td>
+                            <td>@(t.Length?.ToString(@"mm\:ss") ?? "-")</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(t.ExternalLink))
+                                {
+                                    <a href="@t.ExternalLink" target="_blank">Open</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<TrackDto> Tracks { get; set; } = new();
+    [Parameter] public List<AlbumDto> Albums { get; set; } = new();
+}

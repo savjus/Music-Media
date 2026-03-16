@@ -1,0 +1,43 @@
+@using Frontend.Models
+
+<div>
+    @if (Albums.Count == 0)
+    {
+        <p class="text-muted">No albums found.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Genre</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Albums)
+                    {
+                        <tr>
+                            <td>@a.Title</td>
+                            <td>@a.Year</td>
+                            <td>@a.Genre</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(a.ExternalLink))
+                                {
+                                    <a href="@a.ExternalLink" target="_blank">Open</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<AlbumDto> Albums { get; set; } = new();
+}

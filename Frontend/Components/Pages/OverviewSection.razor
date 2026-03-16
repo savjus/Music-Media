@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCore.Components.Rendering
+@using Frontend.Models @* Or the namespace where AlbumDto/TrackDto live *@
+
+<div>
+    <p class="mb-1"><strong>Albums:</strong> @Albums.Count</p>
+    <p class="mb-1"><strong>Tracks:</strong> @Tracks.Count</p>
+    <p class="mb-0"><strong>Tours:</strong> @UpcomingCount upcoming, @PastCount past</p>
+</div>
+
+@code {
+    [Parameter] public List<AlbumDto> Albums { get; set; } = new();
+    [Parameter] public List<TrackDto> Tracks { get; set; } = new();
+    [Parameter] public List<TourDto> Tours { get; set; } = new();
+
+    private int UpcomingCount => Tours.Count(t => !t.IsPast);
+    private int PastCount => Tours.Count(t => t.IsPast);
+}
