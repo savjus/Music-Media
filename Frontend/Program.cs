@@ -13,7 +13,7 @@ builder.Services.AddHttpClient<ArtistApiService>(client =>
     client.BaseAddress = new Uri(backendUrl);
 });
 
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddSingleton<AuthService>();
 builder.Services.AddHttpClient("auth", client =>
 {
     client.BaseAddress = new Uri(backendUrl);
