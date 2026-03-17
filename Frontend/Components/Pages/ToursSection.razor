@@ -14,8 +14,8 @@
                 @foreach (var t in UpcomingTours)
                 {
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        @t.Name – @t.Location
-                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() – @t.EndDate.ToShortDateString()</span>
+                        @t.Name - @t.Location
+                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() - @t.EndDate.ToShortDateString()</span>
                     </li>
                 }
             </ul>
@@ -28,8 +28,8 @@
                 @foreach (var t in PastTours)
                 {
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        @t.Name – @t.Location
-                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() – @t.EndDate.ToShortDateString()</span>
+                        @t.Name - @t.Location
+                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() - @t.EndDate.ToShortDateString()</span>
                     </li>
                 }
             </ul>
