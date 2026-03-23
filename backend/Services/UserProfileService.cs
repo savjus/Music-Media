@@ -8,16 +8,40 @@ public class UserProfileService
     public UserProfileService()
     {
         // Seed demo data for a single example user with Id = 1
-        _profiles.Add(new UserProfile
+        _profiles.AddRange(new[]
         {
-            UserId = 1,
-            DisplayName = "Demo Artist",
-            Bio = "Example musician profile used for demo purposes.",
-            DefaultLanguage = "English",
-            Genres = new List<string> { "Pop", "Rock" },
-            SpotifyUrl = "https://open.spotify.com/",
-            YouTubeUrl = "https://www.youtube.com/"
-        });
+            new UserProfile
+            {
+                UserId = 1,
+                DisplayName = "Demo Artist",
+                Bio = "Example musician profile used for demo purposes.",
+                DefaultLanguage = "English",
+                Genres = new List<string> { "Pop", "Rock" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
+            },
+            new UserProfile
+            {
+                UserId = 2,
+                DisplayName = "user",
+                Bio = "Example musician profile used for demo purposes.",
+                DefaultLanguage = "English",
+                Genres = new List<string> { "Pop", "Rock" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
+            },
+            new UserProfile
+            {
+                UserId = 3,
+                DisplayName = "test",
+                Bio = "Example musician profile used for demo purposes.",
+                DefaultLanguage = "English",
+                Genres = new List<string> { "Pop", "Rock" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
+            }
+        }
+        );
 
         _albums.AddRange(new[]
         {

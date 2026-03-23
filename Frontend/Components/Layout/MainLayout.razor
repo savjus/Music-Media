@@ -15,26 +15,23 @@
         <div class="top-row px-4 d-flex justify-content-end align-items-center gap-2">
             @if (Auth.IsLoggedIn)
             {
-                <NavLink class="btn btn-outline-secondary" href="profile">
-                    Profile
-                </NavLink>
-
-                <button class="btn btn-outline-danger" @onclick="HandleLogout">
-                    Logout
-                </button>
-
-                <button @onClick="SwitchEditing">
-                    Edit
-                </button>
-                
-                @if (ProfileAPi.editing)
+                @if (IsProfilePage)
                 {
-                    <button>
-                        Save
-                    </button>
-                    <button>
-                        Discard
-                    </button>
+                    @if (ProfileAPi.editing)
+                    {
+                        <button class="btn btn-outline-primary">
+                            Save
+                        </button>
+                        <button class="btn btn-outline-secondary" @onclick="SwitchEditing">
+                            Discard
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-outline-primary" @onclick="SwitchEditing">
+                            Edit
+                        </button>
+                    }
                 }
             }
             else
@@ -43,6 +40,15 @@
                     Login
                 </NavLink>
             }
+
+                <NavLink class="btn btn-outline-secondary" href="profile">
+                    Profile
+                </NavLink>
+
+                <button class="btn btn-outline-danger" @onclick="HandleLogout">
+                    Logout
+                </button>
+
         </div>
         <article class="content px-4">
             @Body
@@ -57,18 +63,31 @@
 <ReconnectModal/>
 
 @code {
+    private bool IsProfilePage => Nav.Uri.EndsWith("/profile");
+
     protected override void OnInitialized()
     {
         Auth.OnAuthChanged += OnAuthStateChanged;
+        Nav.LocationChanged += OnLocationChanged;
     }
 
     public void Dispose()
     {
         Auth.OnAuthChanged -= OnAuthStateChanged;
+        Nav.LocationChanged -= OnLocationChanged;
     }
 
     private void OnAuthStateChanged()
     {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (!IsProfilePage && ProfileAPi.editing)
+        {
+            ProfileAPi.editing = false;
+        }
         InvokeAsync(StateHasChanged);
     }
 
@@ -95,8 +114,8 @@
         Auth.Logout();
     }
 
-    private async Task SwitchEditing()
+    private void SwitchEditing()
     {
-        ProfileAPi.editing != ProfileAPi.editing;
+        ProfileAPi.editing = !ProfileAPi.editing;
     }
 }
