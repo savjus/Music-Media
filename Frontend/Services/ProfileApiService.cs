@@ -8,6 +8,8 @@ public class ProfileApiService
     private readonly IHttpClientFactory _factory;
     private readonly AuthService _auth;
 
+    private bool editing = false;
+
     public ProfileApiService(IHttpClientFactory factory, AuthService auth)
     {
         _factory = factory;

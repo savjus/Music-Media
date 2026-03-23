@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject Frontend.Services.AuthService Auth
 @inject NavigationManager Nav
+@inject ProfileApiService ProfileAPi
 
 @inject IJSRuntime JS
 
@@ -21,6 +22,20 @@
                 <button class="btn btn-outline-danger" @onclick="HandleLogout">
                     Logout
                 </button>
+
+                <button @onClick="SwitchEditing">
+                    Edit
+                </button>
+                
+                @if (ProfileAPi.editing)
+                {
+                    <button>
+                        Save
+                    </button>
+                    <button>
+                        Discard
+                    </button>
+                }
             }
             else
             {
@@ -42,7 +57,6 @@
 <ReconnectModal/>
 
 @code {
-
     protected override void OnInitialized()
     {
         Auth.OnAuthChanged += OnAuthStateChanged;
@@ -79,6 +93,10 @@
         await JS.InvokeVoidAsync("sessionStorage.removeItem", "auth_token");
         Nav.NavigateTo("/login");
         Auth.Logout();
+    }
 
+    private async Task SwitchEditing()
+    {
+        ProfileAPi.editing != ProfileAPi.editing;
     }
 }
