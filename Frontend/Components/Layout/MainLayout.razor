@@ -19,10 +19,10 @@
                 {
                     @if (ProfileAPi.editing)
                     {
-                        <button class="btn btn-outline-primary">
+                        <button class="btn btn-outline-primary" @onclick="HandleSave">
                             Save
                         </button>
-                        <button class="btn btn-outline-secondary" @onclick="SwitchEditing">
+                        <button class="btn btn-outline-secondary" @onclick="HandleDiscard">
                             Discard
                         </button>
                     }
@@ -69,12 +69,19 @@
     {
         Auth.OnAuthChanged += OnAuthStateChanged;
         Nav.LocationChanged += OnLocationChanged;
+        ProfileAPi.OnEditingChanged += OnEditingChanged;
     }
 
     public void Dispose()
     {
         Auth.OnAuthChanged -= OnAuthStateChanged;
         Nav.LocationChanged -= OnLocationChanged;
+        ProfileAPi.OnEditingChanged -= OnEditingChanged;
+    }
+
+    private async Task OnEditingChanged(bool isEditing)
+    {
+        await InvokeAsync(StateHasChanged);
     }
 
     private void OnAuthStateChanged()
@@ -114,8 +121,18 @@
         Auth.Logout();
     }
 
-    private void SwitchEditing()
+    private async Task SwitchEditing()
     {
-        ProfileAPi.editing = !ProfileAPi.editing;
+        await ProfileAPi.SwitchEditing();
+    }
+
+    private async Task HandleSave()
+    {
+        await ProfileAPi.Save();
+    }
+
+    private void HandleDiscard()
+    {
+        ProfileAPi.Discard();
     }
 }

@@ -1,6 +1,7 @@
 @page "/profile"
 @rendermode InteractiveServer
-@using Frontend.Components.Pages
+@implements IDisposable
+@using Frontend.Components.Pages.ProfileSections
 @inject Frontend.Services.AuthService Auth
 @inject Frontend.Services.ProfileApiService ProfileApi
 @inject NavigationManager Nav
@@ -16,26 +17,58 @@ else if (loadError is not null)
 {
     <div class="alert alert-danger">@loadError</div>
 }
-else
+else if (profile is not null)
 {
-    <div class="card mb-3 p-3">
-        <h5>@(profile?.Profile?.DisplayName ?? "Name not set") (@(profile?.Profile?.DefaultLanguage ?? "-"))</h5>
-        <p class="mb-1">@(profile?.Profile?.Bio ?? "No bio available")</p>
-        <p class="mb-1">
-            <strong>Genres:</strong>
-            @(profile?.Profile?.Genres != null ? string.Join(", ", profile.Profile.Genres) : "None")
-        </p>
-        <p class="mb-0">
-            @if (!string.IsNullOrWhiteSpace(profile?.Profile?.SpotifyUrl))
-            {
-                <a href="@profile.Profile.SpotifyUrl" target="_blank" class="me-2">Spotify</a>
-            }
-            @if (!string.IsNullOrWhiteSpace(profile?.Profile?.YouTubeUrl))
-            {
-                <a href="@profile.Profile.YouTubeUrl" target="_blank">YouTube</a>
-            }
-        </p>
-    </div>
+    @if (ProfileApi.editing)
+    {
+        <div class="card mb-3 p-3">
+            <div class="mb-3">
+                <label class="form-label">Display Name</label>
+                <input class="form-control" @bind="editableProfile.DisplayName" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Default Language</label>
+                <input class="form-control" @bind="editableProfile.DefaultLanguage" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Bio</label>
+                <textarea class="form-control" @bind="editableProfile.Bio"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Genres (comma-separated)</label>
+                <input class="form-control" @bind="genresInput" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Spotify URL</label>
+                <input class="form-control" @bind="editableProfile.SpotifyUrl" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">YouTube URL</label>
+                <input class="form-control" @bind="editableProfile.YouTubeUrl" />
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card mb-3 p-3">
+            <h5>@(profile.Profile?.DisplayName ?? "Name not set") (@(profile.Profile?.DefaultLanguage ?? "-"))</h5>
+            <p class="mb-1">@(profile.Profile?.Bio ?? "No bio available")</p>
+            <p class="mb-1">
+                <strong>Genres:</strong>
+                @(profile.Profile?.Genres != null ? string.Join(", ", profile.Profile.Genres) : "None")
+            </p>
+            <p class="mb-0">
+                @if (!string.IsNullOrWhiteSpace(profile.Profile?.SpotifyUrl))
+                {
+                    <a href="@profile.Profile.SpotifyUrl" target="_blank" class="me-2">Spotify</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(profile.Profile?.YouTubeUrl))
+                {
+                    <a href="@profile.Profile.YouTubeUrl" target="_blank">YouTube</a>
+                }
+            </p>
+        </div>
+    }
 
     <ul class="nav nav-pills mb-3">
         <li class="nav-item">
@@ -71,12 +104,75 @@ else
 
 @code {
     private ProfileResponseDto? profile;
+    private UserProfileDto editableProfile = new();
+    private string genresInput = "";
     private string? loadError;
     private bool isLoaded;
     private string activeTab = "overview";
     private List<AlbumDto> albums = new();
     private List<TrackDto> tracks = new();
     private List<TourDto> tours = new();
+
+    protected override void OnInitialized()
+    {
+        ProfileApi.OnSave += HandleSave;
+        ProfileApi.OnDiscard += HandleDiscard;
+        ProfileApi.OnEditingChanged += OnEditingChanged;
+        ProfileApi.OnProfileChanged += OnProfileChanged;
+    }
+
+    private void OnProfileChanged()
+    {
+        StateHasChanged();
+    }
+
+    private async Task OnEditingChanged(bool arg)
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ProfileApi.OnSave -= HandleSave;
+        ProfileApi.OnDiscard -= HandleDiscard;
+        ProfileApi.OnEditingChanged -= OnEditingChanged;
+        ProfileApi.OnProfileChanged -= OnProfileChanged;
+    }
+
+    private async Task HandleSave()
+    {
+        editableProfile.Genres = genresInput.Split(',').Select(s => s.Trim()).ToList();
+        var success = await ProfileApi.UpdateMyProfileAsync(editableProfile);
+        if (success)
+        {
+            profile.Profile = editableProfile;
+            await ProfileApi.SwitchEditing();
+        }
+        else
+        {
+            loadError = "Failed to save profile.";
+        }
+        StateHasChanged();
+    }
+
+    private void HandleDiscard()
+    {
+        if (profile?.Profile is not null)
+        {
+            editableProfile = new UserProfileDto
+            {
+                DisplayName = profile.Profile.DisplayName,
+                DefaultLanguage = profile.Profile.DefaultLanguage,
+                Bio = profile.Profile.Bio,
+                Genres = profile.Profile.Genres,
+                SpotifyUrl = profile.Profile.SpotifyUrl,
+                YouTubeUrl = profile.Profile.YouTubeUrl
+            };
+            genresInput = string.Join(", ", editableProfile.Genres ?? new List<string>());
+        }
+        ProfileApi.SwitchEditing();
+        StateHasChanged();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -110,6 +206,19 @@ else
                     albums = profile.Albums ?? new();
                     tracks = profile.Tracks ?? new();
                     tours = profile.Tours ?? new();
+                    if (profile.Profile is not null)
+                    {
+                        editableProfile = new UserProfileDto
+                        {
+                            DisplayName = profile.Profile.DisplayName,
+                            DefaultLanguage = profile.Profile.DefaultLanguage,
+                            Bio = profile.Profile.Bio,
+                            Genres = profile.Profile.Genres,
+                            SpotifyUrl = profile.Profile.SpotifyUrl,
+                            YouTubeUrl = profile.Profile.YouTubeUrl
+                        };
+                        genresInput = string.Join(", ", editableProfile.Genres ?? new List<string>());
+                    }
                 }
             }
             catch (Exception)
@@ -123,7 +232,4 @@ else
             }
         }
     }
-
-    // Nested classes (OverviewSection, AlbumsSection, etc.) follow below...
-    // Paste your existing static component classes here, ensuring they use the passed parameters.
 }

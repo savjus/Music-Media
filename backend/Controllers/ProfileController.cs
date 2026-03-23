@@ -47,5 +47,28 @@ public class ProfileController : ControllerBase
 
         return Ok(dto);
     }
+
+    [HttpPut("me")]
+    public IActionResult UpdateMe([FromBody] UserProfile updatedProfile)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        updatedProfile.UserId = userId;
+        var success = _profiles.UpdateProfile(updatedProfile);
+
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }
 

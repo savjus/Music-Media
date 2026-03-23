@@ -138,5 +138,23 @@ public class UserProfileService
 
     public List<Tour> GetToursForUser(int userId) =>
         _tours.Where(t => t.UserId == userId).ToList();
+
+    public bool UpdateProfile(UserProfile updatedProfile)
+    {
+        var existingProfile = _profiles.FirstOrDefault(p => p.UserId == updatedProfile.UserId);
+        if (existingProfile == null)
+        {
+            return false;
+        }
+
+        existingProfile.DisplayName = updatedProfile.DisplayName;
+        existingProfile.Bio = updatedProfile.Bio;
+        existingProfile.DefaultLanguage = updatedProfile.DefaultLanguage;
+        existingProfile.Genres = updatedProfile.Genres;
+        existingProfile.SpotifyUrl = updatedProfile.SpotifyUrl;
+        existingProfile.YouTubeUrl = updatedProfile.YouTubeUrl;
+
+        return true;
+    }
 }
 
