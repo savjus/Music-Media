@@ -97,4 +97,54 @@ public class ProfileController : ControllerBase
 
         return Ok(track);
     }
+
+    [HttpPost("me/albums")]
+    public IActionResult AddAlbum([FromBody] Album album)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        album.UserId = userId;
+
+        var success = _profiles.AddAlbum(album);
+
+        if (!success)
+        {
+            return BadRequest();
+        }
+
+        return Ok(album);
+    }
+
+    [HttpPost("me/tours")]
+    public IActionResult AddTour([FromBody] Tour tour)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        tour.UserId = userId;
+
+        var success = _profiles.AddTour(tour);
+
+        if (!success)
+        {
+            return BadRequest();
+        }
+
+        return Ok(tour);
+    }
 }

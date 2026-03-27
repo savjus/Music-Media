@@ -3,14 +3,24 @@
 @inject Frontend.Services.ProfileApiService ProfileApi
 
 <div>
-    @if (IsEditing)
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Tracks</h5>
+        <button class="btn btn-outline-primary" @onclick="ToggleTrackEditing">
+            @(isEditingTracks ? "Done editing tracks" : "Edit tracks")
+        </button>
+    </div>
+
+    @if (isEditingTracks)
     {
         <div class="card p-3 mb-3">
             <h5>Add new track</h5>
 
             <div class="mb-3">
                 <label class="form-label">Title</label>
-                <input class="form-control" @bind="newTrackTitle" />
+                <input class="form-control"
+                       @bind="newTrackTitle"
+                       maxlength="100"
+                       placeholder="Enter track title" />
             </div>
 
             <div class="mb-3">
@@ -26,17 +36,34 @@
 
             <div class="mb-3">
                 <label class="form-label">Genre</label>
-                <input class="form-control" @bind="newTrackGenre" />
+                <input class="form-control"
+                       @bind="newTrackGenre"
+                       maxlength="50"
+                       placeholder="Enter track genre" />
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Language</label>
-                <input class="form-control" @bind="newTrackLanguage" />
+                <input class="form-control"
+                       @bind="newTrackLanguage"
+                       maxlength="50"
+                       placeholder="Enter track language" />
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Length</label>
-                <input class="form-control" @bind="newTrackLength" placeholder="e.g. 03:45" />
+                <input class="form-control"
+                       @bind="newTrackLength"
+                       maxlength="5"
+                       placeholder="mm:ss" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">External link</label>
+                <input class="form-control"
+                       @bind="newTrackExternalLink"
+                       maxlength="300"
+                       placeholder="https://example.com" />
             </div>
 
             @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -74,13 +101,14 @@
                         var albumTitle = t.AlbumId.HasValue
                             ? Albums.FirstOrDefault(a => a.Id == t.AlbumId.Value)?.Title ?? "-"
                             : "-";
+
                         <tr>
-                            <td>@t.Title</td>
-                            <td>@albumTitle</td>
-                            <td>@t.Genre</td>
-                            <td>@t.Language</td>
+                            <td class="text-break">@t.Title</td>
+                            <td class="text-break">@albumTitle</td>
+                            <td class="text-break">@t.Genre</td>
+                            <td class="text-break">@t.Language</td>
                             <td>@(t.Length?.ToString(@"mm\:ss") ?? "-")</td>
-                            <td>
+                            <td class="text-break">
                                 @if (!string.IsNullOrWhiteSpace(t.ExternalLink))
                                 {
                                     <a href="@t.ExternalLink" target="_blank">Open</a>
@@ -97,14 +125,21 @@
 @code {
     [Parameter] public List<TrackDto> Tracks { get; set; } = new();
     [Parameter] public List<AlbumDto> Albums { get; set; } = new();
-    [Parameter] public bool IsEditing { get; set; }
 
+    private bool isEditingTracks = false;
     private string newTrackTitle = string.Empty;
     private int? selectedAlbumId;
     private string newTrackGenre = string.Empty;
     private string newTrackLanguage = string.Empty;
     private string newTrackLength = string.Empty;
+    private string newTrackExternalLink = string.Empty;
     private string errorMessage = string.Empty;
+
+    private void ToggleTrackEditing()
+    {
+        isEditingTracks = !isEditingTracks;
+        errorMessage = string.Empty;
+    }
 
     private async Task AddTrack()
     {
@@ -117,42 +152,56 @@
         }
 
         TimeSpan? parsedLength = null;
+
         if (!string.IsNullOrWhiteSpace(newTrackLength))
         {
-            if (TimeSpan.TryParse("00:" + newTrackLength, out var time))
+            if (newTrackLength.Length != 5 || newTrackLength[2] != ':')
             {
-                parsedLength = time;
-            }
-            else
-            {
-                errorMessage = "Invalid length format. Use mm:ss.";
+                errorMessage = "Length must use mm:ss format.";
                 return;
             }
+
+            if (!TimeSpan.TryParse("00:" + newTrackLength, out var time))
+            {
+                errorMessage = "Length must use mm:ss format.";
+                return;
+            }
+
+            parsedLength = time;
+        }
+
+        if (!string.IsNullOrWhiteSpace(newTrackExternalLink)
+            && !Uri.TryCreate(newTrackExternalLink, UriKind.Absolute, out _))
+        {
+            errorMessage = "External link must be a valid URL.";
+            return;
         }
 
         var newTrack = new TrackDto
         {
-            Title = newTrackTitle,
+            Title = newTrackTitle.Trim(),
             AlbumId = selectedAlbumId,
-            Genre = newTrackGenre,
-            Language = newTrackLanguage,
-            Length = parsedLength
+            Genre = newTrackGenre.Trim(),
+            Language = newTrackLanguage.Trim(),
+            Length = parsedLength,
+            ExternalLink = newTrackExternalLink.Trim()
         };
 
-        var success = await ProfileApi.AddTrackAsync(newTrack);
+        var savedTrack = await ProfileApi.AddTrackAsync(newTrack);
 
-        if (!success)
+        if (savedTrack is null)
         {
             errorMessage = "Failed to save track.";
             return;
         }
 
-        Tracks.Add(newTrack);
+        Tracks.Add(savedTrack);
 
         newTrackTitle = string.Empty;
         selectedAlbumId = null;
         newTrackGenre = string.Empty;
         newTrackLanguage = string.Empty;
         newTrackLength = string.Empty;
+        newTrackExternalLink = string.Empty;
     }
 }

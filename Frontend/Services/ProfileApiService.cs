@@ -74,7 +74,7 @@ public class ProfileApiService
         }
     }
 
-    public async Task<bool> AddTrackAsync(TrackDto track)
+    public async Task<TrackDto?> AddTrackAsync(TrackDto track)
     {
         var client = _factory.CreateClient("auth");
 
@@ -85,7 +85,53 @@ public class ProfileApiService
         }
 
         var response = await client.PostAsJsonAsync("api/profile/me/tracks", track);
-        return response.IsSuccessStatusCode;
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<TrackDto>();
+    }
+
+    public async Task<AlbumDto?> AddAlbumAsync(AlbumDto album)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsJsonAsync("api/profile/me/albums", album);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<AlbumDto>();
+    }
+
+    public async Task<TourDto?> AddTourAsync(TourDto tour)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsJsonAsync("api/profile/me/tours", tour);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<TourDto>();
     }
 }
 
