@@ -1,9 +1,10 @@
 ﻿@inherits LayoutComponentBase
-<<<<<<< Updated upstream
-=======
+@implements IDisposable
 @inject Frontend.Services.AuthService Auth
+@inject NavigationManager Nav
+@inject ProfileApiService ProfileAPi
+
 @inject IJSRuntime JS
->>>>>>> Stashed changes
 
 <div class="page">
     <div class="sidebar">
@@ -12,25 +13,26 @@
 
     <main>
         <div class="top-row px-4 d-flex justify-content-end align-items-center gap-2">
-<<<<<<< Updated upstream
-            <NavLink class="btn btn-outline-secondary" href="profile">
-                Profile
-            </NavLink>
-
-            <NavLink class="btn btn-outline-primary" href="login">
-                Login
-            </NavLink>
-=======
             @if (Auth.IsLoggedIn)
             {
-                @* This button will now correctly show "Profile" if a token is found *@
-                <NavLink class="btn btn-outline-secondary" href="profile">
-                    Profile
-                </NavLink>
-
-                <button class="btn btn-outline-danger" @onclick="HandleLogout">
-                    Logout
-                </button>
+                @if (IsProfilePage)
+                {
+                    @if (ProfileAPi.editing)
+                    {
+                        <button class="btn btn-outline-primary" @onclick="HandleSave">
+                            Save
+                        </button>
+                        <button class="btn btn-outline-secondary" @onclick="HandleDiscard">
+                            Discard
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-outline-primary" @onclick="SwitchEditing">
+                            Edit
+                        </button>
+                    }
+                }
             }
             else
             {
@@ -38,51 +40,99 @@
                     Login
                 </NavLink>
             }
->>>>>>> Stashed changes
+
+                <NavLink class="btn btn-outline-secondary" href="profile">
+                    Profile
+                </NavLink>
+
+                <button class="btn btn-outline-danger" @onclick="HandleLogout">
+                    Logout
+                </button>
+
         </div>
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
-
-<<<<<<< Updated upstream
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
-<ReconnectModal />
-=======
-@* ... error UI and ReconnectModal ... *@
+<ReconnectModal/>
 
 @code {
+    private bool IsProfilePage => Nav.Uri.EndsWith("/profile");
+
+    protected override void OnInitialized()
+    {
+        Auth.OnAuthChanged += OnAuthStateChanged;
+        Nav.LocationChanged += OnLocationChanged;
+        ProfileAPi.OnEditingChanged += OnEditingChanged;
+    }
+
+    public void Dispose()
+    {
+        Auth.OnAuthChanged -= OnAuthStateChanged;
+        Nav.LocationChanged -= OnLocationChanged;
+        ProfileAPi.OnEditingChanged -= OnEditingChanged;
+    }
+
+    private async Task OnEditingChanged(bool isEditing)
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAuthStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (!IsProfilePage && ProfileAPi.editing)
+        {
+            ProfileAPi.editing = false;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Only run on the first render and only if we don't already think we're logged in
-        if (!firstRender || Auth.IsLoggedIn)
+        if (firstRender)
         {
-            return;
-        }
-
-        // Check browser storage for a saved token 
-        var storedToken = await JS.InvokeAsync<string?>("localStorage.getItem", "auth_token")
+            var storedToken = await JS.InvokeAsync<string?>("localStorage.getItem", "auth_token")
                            ?? await JS.InvokeAsync<string?>("sessionStorage.getItem", "auth_token");
 
-        if (!string.IsNullOrEmpty(storedToken))
-        {
-            // If found, restore the session and refresh the UI to show the "Profile" button 
-            Auth.TryRestoreToken(storedToken);
-            StateHasChanged();
+            if (!string.IsNullOrEmpty(storedToken))
+            {
+                Auth.TryRestoreToken(storedToken);
+            }
         }
     }
 
     private async Task HandleLogout()
     {
-        Auth.Logout();
         await JS.InvokeVoidAsync("localStorage.removeItem", "auth_token");
         await JS.InvokeVoidAsync("localStorage.removeItem", "email_hint");
         await JS.InvokeVoidAsync("sessionStorage.removeItem", "auth_token");
+        Nav.NavigateTo("/login");
+        Auth.Logout();
+    }
+
+    private async Task SwitchEditing()
+    {
+        await ProfileAPi.SwitchEditing();
+    }
+
+    private async Task HandleSave()
+    {
+        await ProfileAPi.Save();
+    }
+
+    private void HandleDiscard()
+    {
+        ProfileAPi.Discard();
     }
 }
->>>>>>> Stashed changes

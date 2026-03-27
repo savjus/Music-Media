@@ -15,6 +15,8 @@ public class AuthService
 
     public bool IsLoggedIn => Token != null && !IsTokenExpired(Token);
 
+    public event Action? OnAuthChanged;
+
     public async Task<bool> LoginAsync(string email, string password, bool rememberMe)
     {
         var client = _factory.CreateClient("auth");
@@ -33,6 +35,7 @@ public class AuthService
 
         Token = result.Token;
         CurrentUser = new UserInfo { Username = result.Username, Email = result.Email };
+        OnAuthChanged?.Invoke();
         return true;
     }
 
@@ -45,13 +48,12 @@ public class AuthService
 
     public bool TryRestoreToken(string token)
     {
-        if (IsTokenExpired(token)) 
-        {
-            return false;
-        }
+        if (IsLoggedIn) return true;        
+        if (IsTokenExpired(token)) return false;
 
         Token = token;
         CurrentUser = ParseUserInfo(token);
+        OnAuthChanged?.Invoke();
         return true;
     }
 
@@ -59,6 +61,7 @@ public class AuthService
     {
         Token = null;
         CurrentUser = null;
+        OnAuthChanged?.Invoke();
     }
 
     private static bool IsTokenExpired(string token)

@@ -8,16 +8,40 @@ public class UserProfileService
     public UserProfileService()
     {
         // Seed demo data for a single example user with Id = 1
-        _profiles.Add(new UserProfile
+        _profiles.AddRange(new[]
         {
-            UserId = 1,
-            DisplayName = "Demo Artist",
-            Bio = "Example musician profile used for demo purposes.",
-            DefaultLanguage = "English",
-            Genres = new List<string> { "Pop", "Rock" },
-            SpotifyUrl = "https://open.spotify.com/",
-            YouTubeUrl = "https://www.youtube.com/"
-        });
+            new UserProfile
+            {
+                UserId = 1,
+                DisplayName = "Demo Artist",
+                Bio = "Example musician profile used for demo purposes.",
+                DefaultLanguage = "English",
+                Genres = new List<string> { "Pop", "Rock" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
+            },
+            new UserProfile
+            {
+                UserId = 2,
+                DisplayName = "user",
+                Bio = "Example musician profile used for demo purposes.",
+                DefaultLanguage = "English",
+                Genres = new List<string> { "Pop", "Rock" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
+            },
+            new UserProfile
+            {
+                UserId = 3,
+                DisplayName = "test",
+                Bio = "Example musician profile used for demo purposes.",
+                DefaultLanguage = "English",
+                Genres = new List<string> { "Pop", "Rock" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
+            }
+        }
+        );
 
         _albums.AddRange(new[]
         {
@@ -114,5 +138,23 @@ public class UserProfileService
 
     public List<Tour> GetToursForUser(int userId) =>
         _tours.Where(t => t.UserId == userId).ToList();
+
+    public bool UpdateProfile(UserProfile updatedProfile)
+    {
+        var existingProfile = _profiles.FirstOrDefault(p => p.UserId == updatedProfile.UserId);
+        if (existingProfile == null)
+        {
+            return false;
+        }
+
+        existingProfile.DisplayName = updatedProfile.DisplayName;
+        existingProfile.Bio = updatedProfile.Bio;
+        existingProfile.DefaultLanguage = updatedProfile.DefaultLanguage;
+        existingProfile.Genres = updatedProfile.Genres;
+        existingProfile.SpotifyUrl = updatedProfile.SpotifyUrl;
+        existingProfile.YouTubeUrl = updatedProfile.YouTubeUrl;
+
+        return true;
+    }
 }
 
