@@ -156,5 +156,18 @@ public class UserProfileService
 
         return true;
     }
+    public bool AddTrack(Track track)
+    {
+        var userExists = _profiles.Any(p => p.UserId == track.UserId);
+        if (!userExists)
+        {
+            return false;
+        }
+
+        track.Id = _tracks.Any() ? _tracks.Max(t => t.Id) + 1 : 1;
+        _tracks.Add(track);
+
+        return true;
+    }
 }
 

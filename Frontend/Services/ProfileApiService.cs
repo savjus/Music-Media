@@ -73,5 +73,19 @@ public class ProfileApiService
             await OnEditingChanged.Invoke(editing);
         }
     }
+
+    public async Task<bool> AddTrackAsync(TrackDto track)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsJsonAsync("api/profile/me/tracks", track);
+        return response.IsSuccessStatusCode;
+    }
 }
 

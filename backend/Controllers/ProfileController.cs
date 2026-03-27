@@ -22,6 +22,7 @@ public class ProfileController : ControllerBase
             c.Type == JwtRegisteredClaimNames.Sub ||
             c.Type == "sub" ||
             c.Type == ClaimTypes.NameIdentifier);
+
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
         {
             return Unauthorized();
@@ -55,6 +56,7 @@ public class ProfileController : ControllerBase
             c.Type == JwtRegisteredClaimNames.Sub ||
             c.Type == "sub" ||
             c.Type == ClaimTypes.NameIdentifier);
+
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
         {
             return Unauthorized();
@@ -70,5 +72,29 @@ public class ProfileController : ControllerBase
 
         return NoContent();
     }
-}
 
+    [HttpPost("me/tracks")]
+    public IActionResult AddTrack([FromBody] Track track)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        track.UserId = userId;
+
+        var success = _profiles.AddTrack(track);
+
+        if (!success)
+        {
+            return BadRequest();
+        }
+
+        return Ok(track);
+    }
+}

@@ -1,7 +1,55 @@
 @namespace Frontend.Components.Pages.ProfileSections
 @using Frontend.Models
+@inject Frontend.Services.ProfileApiService ProfileApi
 
 <div>
+    @if (IsEditing)
+    {
+        <div class="card p-3 mb-3">
+            <h5>Add new track</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input class="form-control" @bind="newTrackTitle" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Album</label>
+                <select class="form-select" @bind="selectedAlbumId">
+                    <option value="">Select album</option>
+                    @foreach (var album in Albums)
+                    {
+                        <option value="@album.Id">@album.Title</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Genre</label>
+                <input class="form-control" @bind="newTrackGenre" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Language</label>
+                <input class="form-control" @bind="newTrackLanguage" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Length</label>
+                <input class="form-control" @bind="newTrackLength" placeholder="e.g. 03:45" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <button class="btn btn-primary" @onclick="AddTrack">
+                Add
+            </button>
+        </div>
+    }
+
     @if (Tracks.Count == 0)
     {
         <p class="text-muted">No tracks found.</p>
@@ -23,8 +71,8 @@
                 <tbody>
                     @foreach (var t in Tracks)
                     {
-                        var albumTitle = t.AlbumId.HasValue 
-                            ? Albums.FirstOrDefault(a => a.Id == t.AlbumId.Value)?.Title ?? "-" 
+                        var albumTitle = t.AlbumId.HasValue
+                            ? Albums.FirstOrDefault(a => a.Id == t.AlbumId.Value)?.Title ?? "-"
                             : "-";
                         <tr>
                             <td>@t.Title</td>
@@ -49,4 +97,62 @@
 @code {
     [Parameter] public List<TrackDto> Tracks { get; set; } = new();
     [Parameter] public List<AlbumDto> Albums { get; set; } = new();
+    [Parameter] public bool IsEditing { get; set; }
+
+    private string newTrackTitle = string.Empty;
+    private int? selectedAlbumId;
+    private string newTrackGenre = string.Empty;
+    private string newTrackLanguage = string.Empty;
+    private string newTrackLength = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private async Task AddTrack()
+    {
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(newTrackTitle))
+        {
+            errorMessage = "Title is required.";
+            return;
+        }
+
+        TimeSpan? parsedLength = null;
+        if (!string.IsNullOrWhiteSpace(newTrackLength))
+        {
+            if (TimeSpan.TryParse("00:" + newTrackLength, out var time))
+            {
+                parsedLength = time;
+            }
+            else
+            {
+                errorMessage = "Invalid length format. Use mm:ss.";
+                return;
+            }
+        }
+
+        var newTrack = new TrackDto
+        {
+            Title = newTrackTitle,
+            AlbumId = selectedAlbumId,
+            Genre = newTrackGenre,
+            Language = newTrackLanguage,
+            Length = parsedLength
+        };
+
+        var success = await ProfileApi.AddTrackAsync(newTrack);
+
+        if (!success)
+        {
+            errorMessage = "Failed to save track.";
+            return;
+        }
+
+        Tracks.Add(newTrack);
+
+        newTrackTitle = string.Empty;
+        selectedAlbumId = null;
+        newTrackGenre = string.Empty;
+        newTrackLanguage = string.Empty;
+        newTrackLength = string.Empty;
+    }
 }
