@@ -14,6 +14,7 @@ builder.Services.AddHttpClient<ArtistApiService>(client =>
 });
 
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddScoped<DarkModeService>();
 builder.Services.AddHttpClient("auth", client =>
 {
     client.BaseAddress = new Uri(backendUrl);
