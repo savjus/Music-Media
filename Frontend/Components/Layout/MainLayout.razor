@@ -34,6 +34,13 @@
                         </button>
                     }
                 }
+                <button class="btn btn-outline-danger" @onclick="HandleLogout">
+                    Logout
+                </button>
+
+                <NavLink class="btn btn-outline-secondary" href="profile">
+                    Profile
+                </NavLink>
             }
             else
             {
@@ -41,10 +48,6 @@
                     Login
                 </NavLink>
             }
-
-                <NavLink class="btn btn-outline-secondary" href="profile">
-                    Profile
-                </NavLink>
 
                 <button class="btn btn-outline-info" @onclick="DarkMode.ToggleDarkMode" title="Toggle Dark Mode">
                     @if (DarkMode.IsDarkMode)
@@ -55,10 +58,6 @@
                     {
                         <span>🌙</span>
                     }
-                </button>
-
-                <button class="btn btn-outline-danger" @onclick="HandleLogout">
-                    Logout
                 </button>
 
         </div>
