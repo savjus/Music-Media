@@ -1,46 +1,197 @@
 @namespace Frontend.Components.Pages.ProfileSections
 @using Frontend.Models
+@inject Frontend.Services.ProfileApiService ProfileApi
 
 <div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Tours</h5>
+        <button class="btn btn-outline-primary" @onclick="ToggleTourEditing">
+            @(isEditingTours ? "Done editing tours" : "Edit tours")
+        </button>
+    </div>
+
+    @if (isEditingTours)
+    {
+        <div class="card p-3 mb-3">
+            <h5>Add new tour</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input class="form-control"
+                       @bind="newTourName"
+                       maxlength="100"
+                       placeholder="Enter tour name" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Start date</label>
+                <input class="form-control"
+                       @bind="newTourStartDateInput"
+                       maxlength="10"
+                       placeholder="yyyy-MM-dd" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">End date</label>
+                <input class="form-control"
+                       @bind="newTourEndDateInput"
+                       maxlength="10"
+                       placeholder="yyyy-MM-dd" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Location</label>
+                <input class="form-control"
+                       @bind="newTourLocation"
+                       maxlength="100"
+                       placeholder="Enter location" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <button class="btn btn-primary" @onclick="AddTour">
+                Add
+            </button>
+        </div>
+    }
+
     @if (Tours.Count == 0)
     {
         <p class="text-muted">No tours found.</p>
     }
     else
     {
-        @if (UpcomingTours.Any())
-        {
-            <h5>Upcoming tours</h5>
-            <ul class="list-group mb-3">
-                @foreach (var t in UpcomingTours)
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        @t.Name - @t.Location
-                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() - @t.EndDate.ToShortDateString()</span>
-                    </li>
-                }
-            </ul>
-        }
-
-        @if (PastTours.Any())
-        {
-            <h5>Past tours</h5>
-            <ul class="list-group mb-3">
-                @foreach (var t in PastTours)
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        @t.Name - @t.Location
-                        <span class="badge bg-secondary">@t.StartDate.ToShortDateString() - @t.EndDate.ToShortDateString()</span>
-                    </li>
-                }
-            </ul>
-        }
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Start date</th>
+                        <th>End date</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Tours)
+                    {
+                        <tr>
+                            <td class="text-break">@t.Name</td>
+                            <td>@t.StartDate.ToString("yyyy-MM-dd")</td>
+                            <td>@t.EndDate.ToString("yyyy-MM-dd")</td>
+                            <td class="text-break">@t.Location</td>
+                            <td>
+                                @if (t.EndDate.Date < DateTime.UtcNow.Date)
+                                {
+                                    <span class="badge bg-secondary">Past</span>
+                                }
+                                else if (t.StartDate.Date > DateTime.UtcNow.Date)
+                                {
+                                    <span class="badge bg-success">Upcoming</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Ongoing</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 </div>
 
 @code {
     [Parameter] public List<TourDto> Tours { get; set; } = new();
 
-    private IEnumerable<TourDto> UpcomingTours => Tours.Where(t => !t.IsPast);
-    private IEnumerable<TourDto> PastTours => Tours.Where(t => t.IsPast);
+    private bool isEditingTours = false;
+    private string newTourName = string.Empty;
+    private string newTourStartDateInput = string.Empty;
+    private string newTourEndDateInput = string.Empty;
+    private string newTourLocation = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private void ToggleTourEditing()
+    {
+        isEditingTours = !isEditingTours;
+        errorMessage = string.Empty;
+    }
+
+    private async Task AddTour()
+    {
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(newTourName))
+        {
+            errorMessage = "Name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newTourStartDateInput))
+        {
+            errorMessage = "Start date is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newTourEndDateInput))
+        {
+            errorMessage = "End date is required.";
+            return;
+        }
+
+        if (!DateTime.TryParseExact(
+                newTourStartDateInput,
+                "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out var parsedStartDate))
+        {
+            errorMessage = "Start date must use yyyy-MM-dd format.";
+            return;
+        }
+
+        if (!DateTime.TryParseExact(
+                newTourEndDateInput,
+                "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out var parsedEndDate))
+        {
+            errorMessage = "End date must use yyyy-MM-dd format.";
+            return;
+        }
+
+        if (parsedEndDate < parsedStartDate)
+        {
+            errorMessage = "End date cannot be earlier than start date.";
+            return;
+        }
+
+        var newTour = new TourDto
+        {
+            Name = newTourName.Trim(),
+            StartDate = parsedStartDate,
+            EndDate = parsedEndDate,
+            Location = newTourLocation.Trim()
+        };
+
+        var savedTour = await ProfileApi.AddTourAsync(newTour);
+
+        if (savedTour is null)
+        {
+            errorMessage = "Failed to save tour.";
+            return;
+        }
+
+        Tours.Add(savedTour);
+
+        newTourName = string.Empty;
+        newTourStartDateInput = string.Empty;
+        newTourEndDateInput = string.Empty;
+        newTourLocation = string.Empty;
+    }
 }

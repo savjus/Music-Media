@@ -1,7 +1,73 @@
 @namespace Frontend.Components.Pages.ProfileSections
 @using Frontend.Models
+@inject Frontend.Services.ProfileApiService ProfileApi
 
 <div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Albums</h5>
+        <button class="btn btn-outline-primary" @onclick="ToggleAlbumEditing">
+            @(isEditingAlbums ? "Done editing albums" : "Edit albums")
+        </button>
+    </div>
+
+    @if (isEditingAlbums)
+    {
+        <div class="card p-3 mb-3">
+            <h5>Add new album</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input class="form-control"
+                       @bind="newAlbumTitle"
+                       maxlength="100"
+                       placeholder="Enter album title" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Year</label>
+                <input class="form-control"
+                       @bind="newAlbumYearInput"
+                       maxlength="4"
+                       inputmode="numeric"
+                       placeholder="e.g. 2024" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Genre</label>
+                <input class="form-control"
+                       @bind="newAlbumGenre"
+                       maxlength="50"
+                       placeholder="Enter album genre" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control"
+                          @bind="newAlbumDescription"
+                          maxlength="300"
+                          rows="3"
+                          placeholder="Enter album description"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">External link</label>
+                <input class="form-control"
+                       @bind="newAlbumExternalLink"
+                       maxlength="300"
+                       placeholder="https://example.com" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <button class="btn btn-primary" @onclick="AddAlbum">
+                Add
+            </button>
+        </div>
+    }
+
     @if (Albums.Count == 0)
     {
         <p class="text-muted">No albums found.</p>
@@ -15,6 +81,7 @@
                         <th>Title</th>
                         <th>Year</th>
                         <th>Genre</th>
+                        <th>Description</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -22,10 +89,11 @@
                     @foreach (var a in Albums)
                     {
                         <tr>
-                            <td>@a.Title</td>
+                            <td class="text-break">@a.Title</td>
                             <td>@a.Year</td>
-                            <td>@a.Genre</td>
-                            <td>
+                            <td class="text-break">@a.Genre</td>
+                            <td class="text-break">@a.Description</td>
+                            <td class="text-break">
                                 @if (!string.IsNullOrWhiteSpace(a.ExternalLink))
                                 {
                                     <a href="@a.ExternalLink" target="_blank">Open</a>
@@ -41,4 +109,79 @@
 
 @code {
     [Parameter] public List<AlbumDto> Albums { get; set; } = new();
+
+    private bool isEditingAlbums = false;
+    private string newAlbumTitle = string.Empty;
+    private string newAlbumYearInput = string.Empty;
+    private string newAlbumGenre = string.Empty;
+    private string newAlbumDescription = string.Empty;
+    private string newAlbumExternalLink = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private void ToggleAlbumEditing()
+    {
+        isEditingAlbums = !isEditingAlbums;
+        errorMessage = string.Empty;
+    }
+
+    private async Task AddAlbum()
+    {
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(newAlbumTitle))
+        {
+            errorMessage = "Title is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newAlbumYearInput))
+        {
+            errorMessage = "Year is required.";
+            return;
+        }
+
+        if (!int.TryParse(newAlbumYearInput, out var parsedYear))
+        {
+            errorMessage = "Year must be a valid number.";
+            return;
+        }
+
+        if (parsedYear < 0 || parsedYear > 9999)
+        {
+            errorMessage = "Year must be between 0 and 9999.";
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(newAlbumExternalLink)
+            && !Uri.TryCreate(newAlbumExternalLink, UriKind.Absolute, out _))
+        {
+            errorMessage = "External link must be a valid URL.";
+            return;
+        }
+
+        var newAlbum = new AlbumDto
+        {
+            Title = newAlbumTitle.Trim(),
+            Year = parsedYear,
+            Genre = newAlbumGenre.Trim(),
+            Description = newAlbumDescription.Trim(),
+            ExternalLink = newAlbumExternalLink.Trim()
+        };
+
+        var savedAlbum = await ProfileApi.AddAlbumAsync(newAlbum);
+
+        if (savedAlbum is null)
+        {
+            errorMessage = "Failed to save album.";
+            return;
+        }
+
+        Albums.Add(savedAlbum);
+
+        newAlbumTitle = string.Empty;
+        newAlbumYearInput = string.Empty;
+        newAlbumGenre = string.Empty;
+        newAlbumDescription = string.Empty;
+        newAlbumExternalLink = string.Empty;
+    }
 }

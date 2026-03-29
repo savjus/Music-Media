@@ -156,5 +156,46 @@ public class UserProfileService
 
         return true;
     }
+    public bool AddTrack(Track track)
+    {
+        var userExists = _profiles.Any(p => p.UserId == track.UserId);
+        if (!userExists)
+        {
+            return false;
+        }
+
+        track.Id = _tracks.Any() ? _tracks.Max(t => t.Id) + 1 : 1;
+        _tracks.Add(track);
+
+        return true;
+    }
+
+    public bool AddAlbum(Album album)
+    {
+        var userExists = _profiles.Any(p => p.UserId == album.UserId);
+        if (!userExists)
+        {
+            return false;
+        }
+
+        album.Id = _albums.Any() ? _albums.Max(a => a.Id) + 1 : 1;
+        _albums.Add(album);
+
+        return true;
+    }
+
+    public bool AddTour(Tour tour)
+    {
+        var userExists = _profiles.Any(p => p.UserId == tour.UserId);
+        if (!userExists)
+        {
+            return false;
+        }
+
+        tour.Id = _tours.Any() ? _tours.Max(t => t.Id) + 1 : 1;
+        _tours.Add(tour);
+
+        return true;
+    }
 }
 
