@@ -3,6 +3,7 @@
 @inject Frontend.Services.AuthService Auth
 @inject NavigationManager Nav
 @inject ProfileApiService ProfileAPi
+@inject DarkModeService DarkMode
 
 @inject IJSRuntime JS
 
@@ -33,6 +34,13 @@
                         </button>
                     }
                 }
+                <button class="btn btn-outline-danger" @onclick="HandleLogout">
+                    Logout
+                </button>
+
+                <NavLink class="btn btn-outline-secondary" href="profile">
+                    Profile
+                </NavLink>
             }
             else
             {
@@ -41,12 +49,15 @@
                 </NavLink>
             }
 
-                <NavLink class="btn btn-outline-secondary" href="profile">
-                    Profile
-                </NavLink>
-
-                <button class="btn btn-outline-danger" @onclick="HandleLogout">
-                    Logout
+                <button class="btn btn-outline-info" @onclick="DarkMode.ToggleDarkMode" title="Toggle Dark Mode">
+                    @if (DarkMode.IsDarkMode)
+                    {
+                        <span>☀️</span>
+                    }
+                    else
+                    {
+                        <span>🌙</span>
+                    }
                 </button>
 
         </div>
@@ -70,6 +81,7 @@
         Auth.OnAuthChanged += OnAuthStateChanged;
         Nav.LocationChanged += OnLocationChanged;
         ProfileAPi.OnEditingChanged += OnEditingChanged;
+        DarkMode.OnDarkModeChanged += OnDarkModeChanged;
     }
 
     public void Dispose()
@@ -77,6 +89,12 @@
         Auth.OnAuthChanged -= OnAuthStateChanged;
         Nav.LocationChanged -= OnLocationChanged;
         ProfileAPi.OnEditingChanged -= OnEditingChanged;
+        DarkMode.OnDarkModeChanged -= OnDarkModeChanged;
+    }
+
+    private void OnDarkModeChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task OnEditingChanged(bool isEditing)
@@ -102,6 +120,8 @@
     {
         if (firstRender)
         {
+            await DarkMode.InitializeDarkMode();
+
             var storedToken = await JS.InvokeAsync<string?>("localStorage.getItem", "auth_token")
                            ?? await JS.InvokeAsync<string?>("sessionStorage.getItem", "auth_token");
 
