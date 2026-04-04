@@ -4,7 +4,6 @@
 @inject NavigationManager Nav
 @inject ProfileApiService ProfileAPi
 @inject DarkModeService DarkMode
-
 @inject IJSRuntime JS
 
 <div class="page">
@@ -34,13 +33,18 @@
                         </button>
                     }
                 }
-                <button class="btn btn-outline-danger" @onclick="HandleLogout">
-                    Logout
-                </button>
 
                 <NavLink class="btn btn-outline-secondary" href="profile">
                     Profile
                 </NavLink>
+
+                <NavLink class="btn btn-outline-secondary" href="settings">
+                    Settings
+                </NavLink>
+
+                <button class="btn btn-outline-danger" @onclick="HandleLogout">
+                    Logout
+                </button>
             }
             else
             {
@@ -49,29 +53,31 @@
                 </NavLink>
             }
 
-                <button class="btn btn-outline-info" @onclick="DarkMode.ToggleDarkMode" title="Toggle Dark Mode">
-                    @if (DarkMode.IsDarkMode)
-                    {
-                        <span>☀️</span>
-                    }
-                    else
-                    {
-                        <span>🌙</span>
-                    }
-                </button>
-
+            <button class="btn btn-outline-info" @onclick="DarkMode.ToggleDarkMode" title="Toggle Dark Mode">
+                @if (DarkMode.IsDarkMode)
+                {
+                    <span>☀️</span>
+                }
+                else
+                {
+                    <span>🌙</span>
+                }
+            </button>
         </div>
+
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
-<ReconnectModal/>
+
+<ReconnectModal />
 
 @code {
     private bool IsProfilePage => Nav.Uri.EndsWith("/profile");
@@ -113,6 +119,7 @@
         {
             ProfileAPi.editing = false;
         }
+
         InvokeAsync(StateHasChanged);
     }
 

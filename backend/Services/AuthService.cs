@@ -59,4 +59,18 @@ public class AuthService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public bool ChangePassword(int userId, string currentPassword, string newPassword)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId);
+
+        if (user == null)
+            return false;
+
+        if (user.Password != currentPassword)
+            return false;
+
+        user.Password = newPassword;
+        return true;
+    }
 }

@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
+
 namespace Frontend.Services;
 
 public class ProfileApiService
@@ -132,6 +133,25 @@ public class ProfileApiService
         }
 
         return await response.Content.ReadFromJsonAsync<TourDto>();
+    }
+
+    public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsJsonAsync("api/auth/change-password", new
+        {
+            CurrentPassword = currentPassword,
+            NewPassword = newPassword
+        });
+
+        return response.IsSuccessStatusCode;
     }
 }
 
