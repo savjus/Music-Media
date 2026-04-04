@@ -73,4 +73,18 @@ public class AuthService
         user.Password = newPassword;
         return true;
     }
+
+    public bool DeleteAccount(int userId, string password)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId);
+
+        if (user == null)
+            return false;
+
+        if (user.Password != password)
+            return false;
+
+        _users.Remove(user);
+        return true;
+    }
 }

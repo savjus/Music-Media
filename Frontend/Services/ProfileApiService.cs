@@ -153,5 +153,23 @@ public class ProfileApiService
 
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<bool> DeleteAccountAsync(string password)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsJsonAsync("api/auth/delete-account", new
+        {
+            Password = password
+        });
+
+        return response.IsSuccessStatusCode;
+    }
 }
 

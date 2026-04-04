@@ -53,4 +53,22 @@ public class AuthController : ControllerBase
 
         return Ok();
     }
+
+    [Authorize]
+    [HttpPost("delete-account")]
+    public IActionResult DeleteAccount([FromBody] DeleteAccountRequest request)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == ClaimTypes.NameIdentifier || c.Type == "sub");
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized();
+
+        var success = _svc.DeleteAccount(userId, request.Password);
+
+        if (!success)
+            return BadRequest("Invalid password");
+
+        return Ok();
+    }
 }
