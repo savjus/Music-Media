@@ -1,0 +1,256 @@
+@page "/settings"
+@inject Frontend.Services.ProfileApiService ProfileApi
+@inject Frontend.Services.AuthService Auth
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<h3>Settings</h3>
+
+<div class="card p-4 mt-3" style="max-width:500px">
+    <h5>Account Settings</h5>
+
+    @if (!showPasswordForm)
+    {
+        <button class="btn btn-outline-primary" @onclick="OpenPasswordForm">
+            Change Password
+        </button>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label class="form-label">Current Password</label>
+            <div class="input-group">
+                <input type="@CurrentPasswordInputType"
+                       class="form-control"
+                       @bind="currentPassword" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="ToggleCurrentPassword">
+                    @(showCurrentPassword ? "Hide" : "Show")
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">New Password</label>
+            <div class="input-group">
+                <input type="@NewPasswordInputType"
+                       class="form-control"
+                       @bind="newPassword" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="ToggleNewPassword">
+                    @(showNewPassword ? "Hide" : "Show")
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Confirm New Password</label>
+            <div class="input-group">
+                <input type="@ConfirmPasswordInputType"
+                       class="form-control"
+                       @bind="confirmPassword" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="ToggleConfirmPassword">
+                    @(showConfirmPassword ? "Hide" : "Show")
+                </button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert alert-info">@message</div>
+        }
+
+        <div class="d-flex gap-2 mb-4">
+            <button class="btn btn-primary" @onclick="HandleChangePassword">
+                Change Password
+            </button>
+
+            <button class="btn btn-outline-secondary" @onclick="ClosePasswordForm">
+                Cancel
+            </button>
+        </div>
+    }
+
+    <hr />
+
+    <h5 class="text-danger">Danger Zone</h5>
+
+    @if (!showDeleteForm)
+    {
+        <button class="btn btn-outline-danger" @onclick="OpenDeleteForm">
+            Delete Account
+        </button>
+    }
+    else
+    {
+        <div class="mb-3 mt-3">
+            <label class="form-label text-danger">Enter your password to confirm</label>
+            <div class="input-group">
+                <input type="@DeletePasswordInputType"
+                       class="form-control"
+                       @bind="deletePassword" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="ToggleDeletePassword">
+                    @(showDeletePassword ? "Hide" : "Show")
+                </button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(deleteMessage))
+        {
+            <div class="alert alert-danger">@deleteMessage</div>
+        }
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-danger" @onclick="HandleDeleteAccount">
+                Delete Account
+            </button>
+
+            <button class="btn btn-outline-secondary" @onclick="CloseDeleteForm">
+                Cancel
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private bool showPasswordForm = false;
+    private bool showDeleteForm = false;
+
+    private string currentPassword = string.Empty;
+    private string newPassword = string.Empty;
+    private string confirmPassword = string.Empty;
+    private string message = string.Empty;
+
+    private string deletePassword = string.Empty;
+    private string deleteMessage = string.Empty;
+
+    private bool showCurrentPassword = false;
+    private bool showNewPassword = false;
+    private bool showConfirmPassword = false;
+    private bool showDeletePassword = false;
+
+    private string CurrentPasswordInputType => showCurrentPassword ? "text" : "password";
+    private string NewPasswordInputType => showNewPassword ? "text" : "password";
+    private string ConfirmPasswordInputType => showConfirmPassword ? "text" : "password";
+    private string DeletePasswordInputType => showDeletePassword ? "text" : "password";
+
+    private void OpenPasswordForm()
+    {
+        showPasswordForm = true;
+        message = string.Empty;
+    }
+
+    private void ClosePasswordForm()
+    {
+        showPasswordForm = false;
+        currentPassword = string.Empty;
+        newPassword = string.Empty;
+        confirmPassword = string.Empty;
+        message = string.Empty;
+
+        showCurrentPassword = false;
+        showNewPassword = false;
+        showConfirmPassword = false;
+    }
+
+    private void OpenDeleteForm()
+    {
+        showDeleteForm = true;
+        deleteMessage = string.Empty;
+    }
+
+    private void CloseDeleteForm()
+    {
+        showDeleteForm = false;
+        deletePassword = string.Empty;
+        deleteMessage = string.Empty;
+        showDeletePassword = false;
+    }
+
+    private void ToggleCurrentPassword()
+    {
+        showCurrentPassword = !showCurrentPassword;
+    }
+
+    private void ToggleNewPassword()
+    {
+        showNewPassword = !showNewPassword;
+    }
+
+    private void ToggleConfirmPassword()
+    {
+        showConfirmPassword = !showConfirmPassword;
+    }
+
+    private void ToggleDeletePassword()
+    {
+        showDeletePassword = !showDeletePassword;
+    }
+
+    private async Task HandleChangePassword()
+    {
+        message = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(currentPassword))
+        {
+            message = "Current password is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            message = "New password is required.";
+            return;
+        }
+
+        if (newPassword != confirmPassword)
+        {
+            message = "New passwords do not match.";
+            return;
+        }
+
+        var success = await ProfileApi.ChangePasswordAsync(currentPassword, newPassword);
+
+        if (success)
+        {
+            message = "Password changed successfully.";
+            currentPassword = string.Empty;
+            newPassword = string.Empty;
+            confirmPassword = string.Empty;
+
+            showCurrentPassword = false;
+            showNewPassword = false;
+            showConfirmPassword = false;
+
+            showPasswordForm = false;
+        }
+        else
+        {
+            message = "Failed to change password. Check your current password.";
+        }
+    }
+
+    private async Task HandleDeleteAccount()
+    {
+        deleteMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(deletePassword))
+        {
+            deleteMessage = "Password is required.";
+            return;
+        }
+
+        var success = await ProfileApi.DeleteAccountAsync(deletePassword);
+
+        if (!success)
+        {
+            deleteMessage = "Failed to delete account. Check your password.";
+            return;
+        }
+
+        await JS.InvokeVoidAsync("localStorage.removeItem", "auth_token");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "email_hint");
+        await JS.InvokeVoidAsync("sessionStorage.removeItem", "auth_token");
+
+        Auth.Logout();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+}
