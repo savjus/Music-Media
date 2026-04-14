@@ -1,0 +1,85 @@
+@page "/artists/{Id:int}"
+@rendermode InteractiveServer
+@inject ArtistApiService Api
+@inject NavigationManager Nav
+
+<h3>Artist profile</h3>
+
+@if (_loading)
+{
+    <p class="text-muted">Loading artist profile...</p>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="alert alert-danger">@_error</div>
+    <button class="btn btn-outline-secondary" @onclick="GoBackToSearch">Back to artists</button>
+}
+else if (_artist is null)
+{
+    <p class="text-muted">Artist not found.</p>
+    <button class="btn btn-outline-secondary" @onclick="GoBackToSearch">Back to artists</button>
+}
+else
+{
+    <div class="mb-2">
+        <button class="btn btn-outline-secondary btn-sm" @onclick="GoBackToSearch">Back to artists</button>
+    </div>
+
+    <div class="card mb-3 p-3">
+        <h5>@_artist.Name (@_artist.Language)</h5>
+        <p class="mb-1">@(string.IsNullOrWhiteSpace(_artist.Description) ? "No bio available" : _artist.Description)</p>
+        <p class="mb-1">
+            <strong>Genres:</strong>
+            @(!string.IsNullOrWhiteSpace(_artist.Genre) ? _artist.Genre : "None")
+        </p>
+        <p class="mb-1">
+            <strong>Country:</strong>
+            @(!string.IsNullOrWhiteSpace(_artist.Country) ? _artist.Country : "-")
+        </p>
+        <p class="mb-0">
+            <strong>Active:</strong>
+            @if (_artist.ActiveTo.HasValue)
+            {
+                <span>@_artist.ActiveFrom - @_artist.ActiveTo</span>
+            }
+            else
+            {
+                <span>@_artist.ActiveFrom - present</span>
+            }
+        </p>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ArtistDto? _artist;
+    private bool _loading;
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _artist = await Api.GetByIdAsync(Id);
+        }
+        catch
+        {
+            _error = "Failed to load artist profile.";
+            _artist = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void GoBackToSearch()
+    {
+        Nav.NavigateTo("/artists");
+    }
+}
