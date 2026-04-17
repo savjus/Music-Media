@@ -3,6 +3,7 @@
 @inject ArtistApiService Api
 @inject Frontend.Services.ProfileApiService ProfileApi
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <h3>Artist profile</h3>
 
@@ -22,8 +23,14 @@ else if (_artist is null)
 }
 else
 {
-    <div class="mb-2">
-        <button class="btn btn-outline-secondary btn-sm" @onclick="GoBackToSearch">Back to artists</button>
+    <div class="mb-2 d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm" @onclick="GoBackToSearch">
+            Back to artists
+        </button>
+
+        <button class="btn btn-outline-secondary btn-sm" @onclick="CopyArtistLink">
+            @(copied ? "Copied!" : "Share")
+        </button>
     </div>
 
     <div class="card mb-3 p-3">
@@ -123,6 +130,7 @@ else
                 }
             </div>
             break;
+
         case "tracks":
             <div>
                 <h5 class="mb-3">Tracks</h5>
@@ -171,6 +179,7 @@ else
                 }
             </div>
             break;
+
         case "tours":
             <div>
                 <h5 class="mb-3">Tours</h5>
@@ -221,6 +230,7 @@ else
                 }
             </div>
             break;
+
         default:
             <div>
                 <p class="mb-1"><strong>Albums:</strong> @_albums.Count</p>
@@ -243,6 +253,7 @@ else
     private List<AlbumDto> _albums = new();
     private List<TrackDto> _tracks = new();
     private List<TourDto> _tours = new();
+    private bool copied = false;
 
     private string DisplayName =>
         !string.IsNullOrWhiteSpace(_profile?.Profile?.DisplayName)
@@ -313,5 +324,18 @@ else
     private void GoBackToSearch()
     {
         Nav.NavigateTo("/artists");
+    }
+
+    private async Task CopyArtistLink()
+    {
+        await JS.InvokeVoidAsync("copyToClipboard", Nav.Uri);
+
+        copied = true;
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        copied = false;
+        StateHasChanged();
     }
 }

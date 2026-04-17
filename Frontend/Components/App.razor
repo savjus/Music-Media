@@ -15,6 +15,13 @@
 
 <body>
     <Routes @rendermode="InteractiveServer" />
+
+    <script>
+        window.copyToClipboard = (text) => {
+            navigator.clipboard.writeText(text);
+        };
+    </script>
+
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
