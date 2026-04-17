@@ -167,7 +167,11 @@
                     @foreach (var artist in _results)
                     {
                         <tr>
-                            <td><strong>@artist.Name</strong></td>
+                            <td>
+                                <a href="@($"/artists/{artist.Id}")" class="link-primary fw-semibold text-decoration-none">
+                                    @artist.Name
+                                </a>
+                            </td>
                             <td>@artist.Genre</td>
                             <td>@artist.Language</td>
                             <td>@artist.Country</td>

@@ -5,9 +5,12 @@
 <div>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Tracks</h5>
-        <button class="btn btn-outline-primary" @onclick="ToggleTrackEditing">
-            @(isEditingTracks ? "Done editing tracks" : "Edit tracks")
-        </button>
+        @if (CanEdit)
+        {
+            <button class="btn btn-outline-primary" @onclick="ToggleTrackEditing">
+                @(isEditingTracks ? "Done editing tracks" : "Edit tracks")
+            </button>
+        }
     </div>
 
     @if (isEditingTracks)
@@ -125,6 +128,7 @@
 @code {
     [Parameter] public List<TrackDto> Tracks { get; set; } = new();
     [Parameter] public List<AlbumDto> Albums { get; set; } = new();
+    [Parameter] public bool CanEdit { get; set; } = true;
 
     private bool isEditingTracks = false;
     private string newTrackTitle = string.Empty;

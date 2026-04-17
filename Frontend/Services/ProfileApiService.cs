@@ -40,6 +40,19 @@ public class ProfileApiService
         return await response.Content.ReadFromJsonAsync<ProfileResponseDto>();
     }
 
+    public async Task<ProfileResponseDto?> GetProfileByUserIdAsync(int userId)
+    {
+        var client = _factory.CreateClient("auth");
+        var response = await client.GetAsync($"api/profile/{userId}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<ProfileResponseDto>();
+    }
+
     public async Task<bool> UpdateMyProfileAsync(UserProfileDto profile)
     {
         var client = _factory.CreateClient("auth");

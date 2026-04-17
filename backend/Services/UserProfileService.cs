@@ -23,22 +23,22 @@ public class UserProfileService
             new UserProfile
             {
                 UserId = 2,
-                DisplayName = "user",
-                Bio = "Example musician profile used for demo purposes.",
+                DisplayName = "Neon Harbor",
+                Bio = "Synth-pop duo blending retro textures with modern vocals.",
                 DefaultLanguage = "English",
-                Genres = new List<string> { "Pop", "Rock" },
-                SpotifyUrl = "https://open.spotify.com/",
-                YouTubeUrl = "https://www.youtube.com/"
+                Genres = new List<string> { "Synth-Pop", "Electronic" },
+                SpotifyUrl = "https://open.spotify.com/artist/neon-harbor",
+                YouTubeUrl = "https://www.youtube.com/@neonharbor"
             },
             new UserProfile
             {
                 UserId = 3,
-                DisplayName = "test",
-                Bio = "Example musician profile used for demo purposes.",
-                DefaultLanguage = "English",
-                Genres = new List<string> { "Pop", "Rock" },
-                SpotifyUrl = "https://open.spotify.com/",
-                YouTubeUrl = "https://www.youtube.com/"
+                DisplayName = "Baltic Echo",
+                Bio = "Indie folk project focused on acoustic storytelling and coastal moods.",
+                DefaultLanguage = "Lithuanian",
+                Genres = new List<string> { "Indie", "Folk" },
+                SpotifyUrl = "https://open.spotify.com/artist/baltic-echo",
+                YouTubeUrl = "https://www.youtube.com/@balticecho"
             }
         }
         );
@@ -64,6 +64,46 @@ public class UserProfileService
                 Genre = "Rock",
                 Description = "Live recordings from the first tour.",
                 ExternalLink = "https://example.com/on-the-road"
+            },
+            new Album
+            {
+                Id = 3,
+                UserId = 2,
+                Title = "Midnight Signals",
+                Year = 2020,
+                Genre = "Synth-Pop",
+                Description = "A neon-soaked debut full of analog synth hooks.",
+                ExternalLink = "https://example.com/midnight-signals"
+            },
+            new Album
+            {
+                Id = 4,
+                UserId = 2,
+                Title = "Afterglow City",
+                Year = 2023,
+                Genre = "Electronic",
+                Description = "Darker electronic themes with cinematic production.",
+                ExternalLink = "https://example.com/afterglow-city"
+            },
+            new Album
+            {
+                Id = 5,
+                UserId = 3,
+                Title = "Coastal Letters",
+                Year = 2018,
+                Genre = "Folk",
+                Description = "Warm acoustic debut inspired by life by the sea.",
+                ExternalLink = "https://example.com/coastal-letters"
+            },
+            new Album
+            {
+                Id = 6,
+                UserId = 3,
+                Title = "Northern Pines",
+                Year = 2022,
+                Genre = "Indie",
+                Description = "A textured indie-folk record with intimate vocals.",
+                ExternalLink = "https://example.com/northern-pines"
             }
         });
 
@@ -101,6 +141,61 @@ public class UserProfileService
                 Language = "English",
                 Length = TimeSpan.FromMinutes(5),
                 ExternalLink = "https://example.com/miles-ahead"
+            },
+            new Track
+            {
+                Id = 4,
+                UserId = 2,
+                AlbumId = 3,
+                Title = "Glass Neon",
+                Genre = "Synth-Pop",
+                Language = "English",
+                Length = TimeSpan.FromMinutes(3.8),
+                ExternalLink = "https://example.com/glass-neon"
+            },
+            new Track
+            {
+                Id = 5,
+                UserId = 2,
+                AlbumId = 3,
+                Title = "Harbor Lights",
+                Genre = "Synth-Pop",
+                Language = "English",
+                Length = TimeSpan.FromMinutes(4.1),
+                ExternalLink = "https://example.com/harbor-lights"
+            },
+            new Track
+            {
+                Id = 6,
+                UserId = 2,
+                AlbumId = 4,
+                Title = "Soft Static",
+                Genre = "Electronic",
+                Language = "English",
+                Length = TimeSpan.FromMinutes(4.4),
+                ExternalLink = "https://example.com/soft-static"
+            },
+            new Track
+            {
+                Id = 7,
+                UserId = 3,
+                AlbumId = 5,
+                Title = "Paper Boats",
+                Genre = "Folk",
+                Language = "Lithuanian",
+                Length = TimeSpan.FromMinutes(3.2),
+                ExternalLink = "https://example.com/paper-boats"
+            },
+            new Track
+            {
+                Id = 8,
+                UserId = 3,
+                AlbumId = 6,
+                Title = "Amber Wind",
+                Genre = "Indie",
+                Language = "Lithuanian",
+                Length = TimeSpan.FromMinutes(4.0),
+                ExternalLink = "https://example.com/amber-wind"
             }
         });
 
@@ -123,6 +218,42 @@ public class UserProfileService
                 StartDate = DateTime.UtcNow.AddMonths(1),
                 EndDate = DateTime.UtcNow.AddMonths(2),
                 Location = "Europe"
+            },
+            new Tour
+            {
+                Id = 3,
+                UserId = 2,
+                Name = "Neon Nights",
+                StartDate = DateTime.UtcNow.AddMonths(-3),
+                EndDate = DateTime.UtcNow.AddMonths(-2),
+                Location = "UK"
+            },
+            new Tour
+            {
+                Id = 4,
+                UserId = 2,
+                Name = "Afterglow Live",
+                StartDate = DateTime.UtcNow.AddMonths(2),
+                EndDate = DateTime.UtcNow.AddMonths(3),
+                Location = "Scandinavia"
+            },
+            new Tour
+            {
+                Id = 5,
+                UserId = 3,
+                Name = "Forest Sessions",
+                StartDate = DateTime.UtcNow.AddMonths(-8),
+                EndDate = DateTime.UtcNow.AddMonths(-7),
+                Location = "Baltic States"
+            },
+            new Tour
+            {
+                Id = 6,
+                UserId = 3,
+                Name = "Coastal Evenings",
+                StartDate = DateTime.UtcNow.AddMonths(4),
+                EndDate = DateTime.UtcNow.AddMonths(5),
+                Location = "Northern Europe"
             }
         });
     }

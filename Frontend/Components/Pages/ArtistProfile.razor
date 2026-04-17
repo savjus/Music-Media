@@ -1,0 +1,317 @@
+@page "/artists/{Id:int}"
+@rendermode InteractiveServer
+@inject ArtistApiService Api
+@inject Frontend.Services.ProfileApiService ProfileApi
+@inject NavigationManager Nav
+
+<h3>Artist profile</h3>
+
+@if (_loading)
+{
+    <p class="text-muted">Loading artist profile...</p>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="alert alert-danger">@_error</div>
+    <button class="btn btn-outline-secondary" @onclick="GoBackToSearch">Back to artists</button>
+}
+else if (_artist is null)
+{
+    <p class="text-muted">Artist not found.</p>
+    <button class="btn btn-outline-secondary" @onclick="GoBackToSearch">Back to artists</button>
+}
+else
+{
+    <div class="mb-2">
+        <button class="btn btn-outline-secondary btn-sm" @onclick="GoBackToSearch">Back to artists</button>
+    </div>
+
+    <div class="card mb-3 p-3">
+        <h5>@(DisplayName) (@(DisplayLanguage))</h5>
+        <p class="mb-1">@DisplayBio</p>
+        <p class="mb-1">
+            <strong>Genres:</strong>
+            @DisplayGenres
+        </p>
+        <p class="mb-1">
+            <strong>Country:</strong>
+            @(!string.IsNullOrWhiteSpace(_artist.Country) ? _artist.Country : "-")
+        </p>
+        <p class="mb-1">
+            <strong>Active:</strong>
+            @if (_artist.ActiveTo.HasValue)
+            {
+                <span>@_artist.ActiveFrom - @_artist.ActiveTo</span>
+            }
+            else
+            {
+                <span>@_artist.ActiveFrom - present</span>
+            }
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(_profile?.Profile?.SpotifyUrl) || !string.IsNullOrWhiteSpace(_profile?.Profile?.YouTubeUrl))
+        {
+            <p class="mb-0">
+                @if (!string.IsNullOrWhiteSpace(_profile?.Profile?.SpotifyUrl))
+                {
+                    <a href="@_profile.Profile.SpotifyUrl" target="_blank" class="me-2">Spotify</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(_profile?.Profile?.YouTubeUrl))
+                {
+                    <a href="@_profile.Profile.YouTubeUrl" target="_blank">YouTube</a>
+                }
+            </p>
+        }
+    </div>
+
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item">
+            <button class="nav-link @(_activeTab == "overview" ? "active" : "")" @onclick="@(() => _activeTab = "overview")">Overview</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(_activeTab == "albums" ? "active" : "")" @onclick="@(() => _activeTab = "albums")">Albums</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(_activeTab == "tracks" ? "active" : "")" @onclick="@(() => _activeTab = "tracks")">Tracks</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(_activeTab == "tours" ? "active" : "")" @onclick="@(() => _activeTab = "tours")">Tours</button>
+        </li>
+    </ul>
+
+    @switch (_activeTab)
+    {
+        case "albums":
+            <div>
+                <h5 class="mb-3">Albums</h5>
+                @if (_albums.Count == 0)
+                {
+                    <p class="text-muted">No albums found.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Year</th>
+                                    <th>Genre</th>
+                                    <th>Description</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var a in _albums)
+                                {
+                                    <tr>
+                                        <td class="text-break">@a.Title</td>
+                                        <td>@a.Year</td>
+                                        <td class="text-break">@a.Genre</td>
+                                        <td class="text-break">@a.Description</td>
+                                        <td class="text-break">
+                                            @if (!string.IsNullOrWhiteSpace(a.ExternalLink))
+                                            {
+                                                <a href="@a.ExternalLink" target="_blank">Open</a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            break;
+        case "tracks":
+            <div>
+                <h5 class="mb-3">Tracks</h5>
+                @if (_tracks.Count == 0)
+                {
+                    <p class="text-muted">No tracks found.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Album</th>
+                                    <th>Genre</th>
+                                    <th>Language</th>
+                                    <th>Length</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in _tracks)
+                                {
+                                    var albumTitle = t.AlbumId.HasValue
+                                        ? _albums.FirstOrDefault(a => a.Id == t.AlbumId.Value)?.Title ?? "-"
+                                        : "-";
+
+                                    <tr>
+                                        <td class="text-break">@t.Title</td>
+                                        <td class="text-break">@albumTitle</td>
+                                        <td class="text-break">@t.Genre</td>
+                                        <td class="text-break">@t.Language</td>
+                                        <td>@(t.Length?.ToString(@"mm\:ss") ?? "-")</td>
+                                        <td class="text-break">
+                                            @if (!string.IsNullOrWhiteSpace(t.ExternalLink))
+                                            {
+                                                <a href="@t.ExternalLink" target="_blank">Open</a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            break;
+        case "tours":
+            <div>
+                <h5 class="mb-3">Tours</h5>
+                @if (_tours.Count == 0)
+                {
+                    <p class="text-muted">No tours found.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Start date</th>
+                                    <th>End date</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in _tours)
+                                {
+                                    <tr>
+                                        <td class="text-break">@t.Name</td>
+                                        <td>@t.StartDate.ToString("yyyy-MM-dd")</td>
+                                        <td>@t.EndDate.ToString("yyyy-MM-dd")</td>
+                                        <td class="text-break">@t.Location</td>
+                                        <td>
+                                            @if (t.EndDate.Date < DateTime.UtcNow.Date)
+                                            {
+                                                <span class="badge bg-secondary">Past</span>
+                                            }
+                                            else if (t.StartDate.Date > DateTime.UtcNow.Date)
+                                            {
+                                                <span class="badge bg-success">Upcoming</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">Ongoing</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            break;
+        default:
+            <div>
+                <p class="mb-1"><strong>Albums:</strong> @_albums.Count</p>
+                <p class="mb-1"><strong>Tracks:</strong> @_tracks.Count</p>
+                <p class="mb-0"><strong>Tours:</strong> @UpcomingCount upcoming, @PastCount past</p>
+            </div>
+            break;
+    }
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ArtistDto? _artist;
+    private ProfileResponseDto? _profile;
+    private bool _loading;
+    private string? _error;
+    private string _activeTab = "overview";
+    private List<AlbumDto> _albums = new();
+    private List<TrackDto> _tracks = new();
+    private List<TourDto> _tours = new();
+
+    private string DisplayName =>
+        !string.IsNullOrWhiteSpace(_profile?.Profile?.DisplayName)
+            ? _profile.Profile.DisplayName
+            : _artist?.Name ?? "Name not set";
+
+    private string DisplayLanguage =>
+        !string.IsNullOrWhiteSpace(_profile?.Profile?.DefaultLanguage)
+            ? _profile.Profile.DefaultLanguage
+            : _artist?.Language ?? "-";
+
+    private string DisplayBio =>
+        !string.IsNullOrWhiteSpace(_profile?.Profile?.Bio)
+            ? _profile.Profile.Bio
+            : !string.IsNullOrWhiteSpace(_artist?.Description)
+                ? _artist.Description
+                : "No bio available";
+
+    private string DisplayGenres =>
+        _profile?.Profile?.Genres != null && _profile.Profile.Genres.Count > 0
+            ? string.Join(", ", _profile.Profile.Genres)
+            : !string.IsNullOrWhiteSpace(_artist?.Genre)
+                ? _artist.Genre
+                : "None";
+
+    private int UpcomingCount => _tours.Count(t => !t.IsPast);
+    private int PastCount => _tours.Count(t => t.IsPast);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _error = null;
+        _activeTab = "overview";
+
+        try
+        {
+            _artist = await Api.GetByIdAsync(Id);
+
+            if (_artist is null)
+            {
+                _profile = null;
+                _albums = new();
+                _tracks = new();
+                _tours = new();
+                return;
+            }
+
+            _profile = await ProfileApi.GetProfileByUserIdAsync(Id);
+            _albums = _profile?.Albums ?? new();
+            _tracks = _profile?.Tracks ?? new();
+            _tours = _profile?.Tours ?? new();
+        }
+        catch
+        {
+            _error = "Failed to load artist profile.";
+            _artist = null;
+            _profile = null;
+            _albums = new();
+            _tracks = new();
+            _tours = new();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void GoBackToSearch()
+    {
+        Nav.NavigateTo("/artists");
+    }
+}

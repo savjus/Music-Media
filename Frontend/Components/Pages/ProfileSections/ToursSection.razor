@@ -5,9 +5,12 @@
 <div>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Tours</h5>
-        <button class="btn btn-outline-primary" @onclick="ToggleTourEditing">
-            @(isEditingTours ? "Done editing tours" : "Edit tours")
-        </button>
+        @if (CanEdit)
+        {
+            <button class="btn btn-outline-primary" @onclick="ToggleTourEditing">
+                @(isEditingTours ? "Done editing tours" : "Edit tours")
+            </button>
+        }
     </div>
 
     @if (isEditingTours)
@@ -107,6 +110,7 @@
 
 @code {
     [Parameter] public List<TourDto> Tours { get; set; } = new();
+    [Parameter] public bool CanEdit { get; set; } = true;
 
     private bool isEditingTours = false;
     private string newTourName = string.Empty;

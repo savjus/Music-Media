@@ -15,6 +15,31 @@ public class ProfileController : ControllerBase
         _profiles = profiles;
     }
 
+    [AllowAnonymous]
+    [HttpGet("{userId:int}")]
+    public IActionResult GetByUserId(int userId)
+    {
+        var profile = _profiles.GetProfile(userId);
+        if (profile == null)
+        {
+            return NotFound();
+        }
+
+        var albums = _profiles.GetAlbumsForUser(userId);
+        var tracks = _profiles.GetTracksForUser(userId);
+        var tours = _profiles.GetToursForUser(userId);
+
+        var dto = new
+        {
+            Profile = profile,
+            Albums = albums,
+            Tracks = tracks,
+            Tours = tours
+        };
+
+        return Ok(dto);
+    }
+
     [HttpGet("me")]
     public IActionResult GetMe()
     {

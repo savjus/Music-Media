@@ -5,9 +5,12 @@
 <div>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Albums</h5>
-        <button class="btn btn-outline-primary" @onclick="ToggleAlbumEditing">
-            @(isEditingAlbums ? "Done editing albums" : "Edit albums")
-        </button>
+        @if (CanEdit)
+        {
+            <button class="btn btn-outline-primary" @onclick="ToggleAlbumEditing">
+                @(isEditingAlbums ? "Done editing albums" : "Edit albums")
+            </button>
+        }
     </div>
 
     @if (isEditingAlbums)
@@ -109,6 +112,7 @@
 
 @code {
     [Parameter] public List<AlbumDto> Albums { get; set; } = new();
+    [Parameter] public bool CanEdit { get; set; } = true;
 
     private bool isEditingAlbums = false;
     private string newAlbumTitle = string.Empty;
