@@ -60,23 +60,49 @@
                             <strong>@comment.AuthorName</strong>
                             <small class="text-muted ms-2">@FormatDate(comment.CreatedAt)</small>
                         </div>
-                        @if (IsAuthenticated && CurrentUserId == comment.AuthorUserId)
+                        @if (IsAuthenticated && CurrentUserId == ProfileUserId)
                         {
                             <button class="btn btn-sm btn-outline-danger"
                                     @onclick="() => DeleteComment(comment.Id)"
-                                    disabled="@(IsDeletingCommentId == comment.Id)">
+                                    disabled="@(IsDeletingCommentId == comment.Id)"
+                                    title="Delete this comment">
                                 @if (IsDeletingCommentId == comment.Id)
                                 {
                                     <span class="spinner-border spinner-border-sm"></span>
                                 }
                                 else
                                 {
-                                    <span>Delete</span>
+                                    <span>🗑️</span>
                                 }
                             </button>
                         }
                     </div>
-                    <p class="mb-0">@comment.Content</p>
+                    <p class="mb-3">@comment.Content</p>
+                    
+                    @if (IsAuthenticated)
+                    {
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    @onclick="() => LikeComment(comment.Id)"
+                                    disabled="@(IsLoadingCommentId == comment.Id)"
+                                    title="Like this comment">
+                                👍 @comment.Likes
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    @onclick="() => DislikeComment(comment.Id)"
+                                    disabled="@(IsLoadingCommentId == comment.Id)"
+                                    title="Dislike this comment">
+                                👎 @comment.Dislikes
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-light text-dark">👍 @comment.Likes</span>
+                            <span class="badge bg-light text-dark">👎 @comment.Dislikes</span>
+                        </div>
+                    }
                 </div>
             }
         </div>
@@ -99,6 +125,7 @@
     private string? NewCommentContent;
     private bool IsSubmitting = false;
     private int? IsDeletingCommentId;
+    private int? IsLoadingCommentId;
     private string? SubmitError;
     private bool IsAuthenticated => !string.IsNullOrEmpty(Auth.Token);
     private int CurrentUserId => Auth.UserId;
@@ -159,6 +186,56 @@
         finally
         {
             IsDeletingCommentId = null;
+        }
+    }
+
+    private async Task LikeComment(int commentId)
+    {
+        if (IsLoadingCommentId.HasValue)
+            return;
+
+        IsLoadingCommentId = commentId;
+        try
+        {
+            var success = await ProfileApi.LikeCommentAsync(commentId);
+            if (success)
+            {
+                // Reload comments to get updated counts
+                var comments = await ProfileApi.GetCommentsAsync(ProfileUserId);
+                if (comments != null)
+                {
+                    Comments = comments;
+                }
+            }
+        }
+        finally
+        {
+            IsLoadingCommentId = null;
+        }
+    }
+
+    private async Task DislikeComment(int commentId)
+    {
+        if (IsLoadingCommentId.HasValue)
+            return;
+
+        IsLoadingCommentId = commentId;
+        try
+        {
+            var success = await ProfileApi.DislikeCommentAsync(commentId);
+            if (success)
+            {
+                // Reload comments to get updated counts
+                var comments = await ProfileApi.GetCommentsAsync(ProfileUserId);
+                if (comments != null)
+                {
+                    Comments = comments;
+                }
+            }
+        }
+        finally
+        {
+            IsLoadingCommentId = null;
         }
     }
 

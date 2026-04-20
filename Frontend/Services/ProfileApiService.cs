@@ -249,5 +249,33 @@ public class ProfileApiService
         var response = await client.DeleteAsync($"api/profile/comments/{commentId}");
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<bool> LikeCommentAsync(int commentId)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsJsonAsync($"api/profile/comments/{commentId}/like", new { });
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DislikeCommentAsync(int commentId)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsJsonAsync($"api/profile/comments/{commentId}/dislike", new { });
+        return response.IsSuccessStatusCode;
+    }
 }
 

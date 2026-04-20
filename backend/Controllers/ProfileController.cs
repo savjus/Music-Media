@@ -200,6 +200,12 @@ public class ProfileController : ControllerBase
             return BadRequest("Comment content cannot be empty.");
         }
 
+        // Check for profanity
+        if (ProfanityFilter.ContainsProfanity(request.Content))
+        {
+            return BadRequest(ProfanityFilter.GetProfanityErrorMessage());
+        }
+
         var comment = new Comment
         {
             ProfileUserId = userId,
@@ -247,5 +253,51 @@ public class ProfileController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpPost("comments/{commentId:int}/like")]
+    public IActionResult LikeComment(int commentId)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = _profiles.LikeComment(commentId, userId);
+
+        if (!success)
+        {
+            return NotFound("Comment not found.");
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("comments/{commentId:int}/dislike")]
+    public IActionResult DislikeComment(int commentId)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = _profiles.DislikeComment(commentId, userId);
+
+        if (!success)
+        {
+            return NotFound("Comment not found.");
+        }
+
+        return Ok();
     }
 }

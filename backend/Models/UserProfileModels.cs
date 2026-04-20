@@ -52,5 +52,7 @@ public class Comment
     public string AuthorName { get; set; } = "";
     public string Content { get; set; } = "";
     public DateTime CreatedAt { get; set; }
+    public int Likes { get; set; } = 0;
+    public int Dislikes { get; set; } = 0;
 }
 
