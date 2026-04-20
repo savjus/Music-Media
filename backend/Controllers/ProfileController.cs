@@ -15,29 +15,32 @@ public class ProfileController : ControllerBase
         _profiles = profiles;
     }
 
+    public class ProfileResponse
+    {
+        public UserProfile? Profile { get; set; }
+        public List<Album> Albums { get; set; } = new();
+        public List<Track> Tracks { get; set; } = new();
+        public List<Tour> Tours { get; set; } = new();
+        public List<Comment> Comments { get; set; } = new();
+    }
+
     [AllowAnonymous]
     [HttpGet("{userId:int}")]
     public IActionResult GetByUserId(int userId)
     {
         var profile = _profiles.GetProfile(userId);
-        if (profile == null)
-        {
-            return NotFound();
-        }
+        var comments = _profiles.GetCommentsForProfile(userId);
 
-        var albums = _profiles.GetAlbumsForUser(userId);
-        var tracks = _profiles.GetTracksForUser(userId);
-        var tours = _profiles.GetToursForUser(userId);
-
-        var dto = new
+        var response = new ProfileResponse
         {
             Profile = profile,
-            Albums = albums,
-            Tracks = tracks,
-            Tours = tours
+            Albums = profile != null ? _profiles.GetAlbumsForUser(userId) : new(),
+            Tracks = profile != null ? _profiles.GetTracksForUser(userId) : new(),
+            Tours = profile != null ? _profiles.GetToursForUser(userId) : new(),
+            Comments = comments
         };
 
-        return Ok(dto);
+        return Ok(response);
     }
 
     [HttpGet("me")]
@@ -59,19 +62,16 @@ public class ProfileController : ControllerBase
             return NotFound();
         }
 
-        var albums = _profiles.GetAlbumsForUser(userId);
-        var tracks = _profiles.GetTracksForUser(userId);
-        var tours = _profiles.GetToursForUser(userId);
-
-        var dto = new
+        var response = new ProfileResponse
         {
             Profile = profile,
-            Albums = albums,
-            Tracks = tracks,
-            Tours = tours
+            Albums = _profiles.GetAlbumsForUser(userId),
+            Tracks = _profiles.GetTracksForUser(userId),
+            Tours = _profiles.GetToursForUser(userId),
+            Comments = _profiles.GetCommentsForProfile(userId)
         };
 
-        return Ok(dto);
+        return Ok(response);
     }
 
     [HttpPut("me")]
@@ -171,5 +171,133 @@ public class ProfileController : ControllerBase
         }
 
         return Ok(tour);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{userId:int}/comments")]
+    public IActionResult GetComments(int userId)
+    {
+        var comments = _profiles.GetCommentsForProfile(userId);
+        return Ok(comments);
+    }
+
+    [HttpPost("{userId:int}/comments")]
+    public IActionResult AddComment(int userId, [FromBody] CreateCommentRequest request)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var currentUserId))
+        {
+            return Unauthorized("Invalid or missing authentication token.");
+        }
+
+        // Validate comment content
+        if (request == null || string.IsNullOrWhiteSpace(request.Content))
+        {
+            return BadRequest("Comment content cannot be empty.");
+        }
+
+        // Check for profanity
+        if (ProfanityFilter.ContainsProfanity(request.Content))
+        {
+            return BadRequest(ProfanityFilter.GetProfanityErrorMessage());
+        }
+
+        var comment = new Comment
+        {
+            ProfileUserId = userId,
+            AuthorUserId = currentUserId,
+            Content = request.Content.Trim()
+        };
+
+        // Set author name from current user's profile
+        var authorProfile = _profiles.GetProfile(currentUserId);
+        comment.AuthorName = authorProfile?.DisplayName ?? "Anonymous";
+
+        var success = _profiles.AddComment(comment);
+
+        if (!success)
+        {
+            return BadRequest("Failed to add comment.");
+        }
+
+        return Ok(comment);
+    }
+
+    public class CreateCommentRequest
+    {
+        public string? Content { get; set; }
+    }
+
+    [HttpDelete("comments/{commentId:int}")]
+    public IActionResult DeleteComment(int commentId)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = _profiles.DeleteComment(commentId, userId);
+
+        if (!success)
+        {
+            return Forbid();
+        }
+
+        return NoContent();
+    }
+
+    [HttpPost("comments/{commentId:int}/like")]
+    public IActionResult LikeComment(int commentId)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = _profiles.LikeComment(commentId, userId);
+
+        if (!success)
+        {
+            return NotFound("Comment not found.");
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("comments/{commentId:int}/dislike")]
+    public IActionResult DislikeComment(int commentId)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = _profiles.DislikeComment(commentId, userId);
+
+        if (!success)
+        {
+            return NotFound("Comment not found.");
+        }
+
+        return Ok();
     }
 }

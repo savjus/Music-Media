@@ -1,5 +1,6 @@
 @page "/artists/{Id:int}"
 @rendermode InteractiveServer
+@using Frontend.Components.Pages.ProfileSections
 @inject ArtistApiService Api
 @inject Frontend.Services.ProfileApiService ProfileApi
 @inject NavigationManager Nav
@@ -83,6 +84,9 @@ else
         </li>
         <li class="nav-item">
             <button class="nav-link @(_activeTab == "tours" ? "active" : "")" @onclick="@(() => _activeTab = "tours")">Tours</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(_activeTab == "comments" ? "active" : "")" @onclick="@(() => _activeTab = "comments")">Comments</button>
         </li>
     </ul>
 
@@ -230,6 +234,12 @@ else
                 }
             </div>
             break;
+        case "comments":
+            <CommentsSection ProfileUserId="@Id"
+                            Comments="@_comments"
+                            OnCommentAdded="@HandleCommentAdded"
+                            OnCommentDeleted="@HandleCommentDeleted" />
+            break;
 
         default:
             <div>
@@ -253,6 +263,7 @@ else
     private List<AlbumDto> _albums = new();
     private List<TrackDto> _tracks = new();
     private List<TourDto> _tours = new();
+    private List<CommentDto> _comments = new();
     private bool copied = false;
 
     private string DisplayName =>
@@ -298,13 +309,25 @@ else
                 _albums = new();
                 _tracks = new();
                 _tours = new();
+                _comments = new();
                 return;
             }
 
             _profile = await ProfileApi.GetProfileByUserIdAsync(Id);
-            _albums = _profile?.Albums ?? new();
-            _tracks = _profile?.Tracks ?? new();
-            _tours = _profile?.Tours ?? new();
+            if (_profile != null)
+            {
+                _albums = _profile.Albums ?? new();
+                _tracks = _profile.Tracks ?? new();
+                _tours = _profile.Tours ?? new();
+                _comments = _profile.Comments ?? new();
+            }
+            else
+            {
+                _albums = new();
+                _tracks = new();
+                _tours = new();
+                _comments = new();
+            }
         }
         catch
         {
@@ -314,16 +337,32 @@ else
             _albums = new();
             _tracks = new();
             _tours = new();
+            _comments = new();
         }
         finally
         {
             _loading = false;
+            StateHasChanged();
         }
     }
 
     private void GoBackToSearch()
     {
         Nav.NavigateTo("/artists");
+    }
+
+    private Task HandleCommentAdded(CommentDto comment)
+    {
+        // Comments list is already updated by the CommentsSection component
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCommentDeleted(int commentId)
+    {
+        // Comments list is already updated by the CommentsSection component
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task CopyArtistLink()

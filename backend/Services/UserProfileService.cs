@@ -4,6 +4,9 @@ public class UserProfileService
     private readonly List<Album> _albums = new();
     private readonly List<Track> _tracks = new();
     private readonly List<Tour> _tours = new();
+    private readonly List<Comment> _comments = new();
+    private readonly Dictionary<string, int> _commentLikes = new(); // Key: "commentId-userId" Value: 1 for like, -1 for dislike
+    private readonly Dictionary<int, Dictionary<int, int>> _commentVotes = new(); // commentId -> userId -> vote (1 = like, -1 = dislike, 0 = none)
 
     public UserProfileService()
     {
@@ -327,6 +330,99 @@ public class UserProfileService
         _tours.Add(tour);
 
         return true;
+    }
+
+    public List<Comment> GetCommentsForProfile(int profileUserId) =>
+        _comments.Where(c => c.ProfileUserId == profileUserId)
+                  .OrderByDescending(c => c.CreatedAt)
+                  .ToList();
+
+    public bool AddComment(Comment comment)
+    {
+        comment.Id = _comments.Any() ? _comments.Max(c => c.Id) + 1 : 1;
+        comment.CreatedAt = DateTime.UtcNow;
+        _comments.Add(comment);
+        return true;
+    }
+
+    public bool DeleteComment(int commentId, int currentUserId)
+    {
+        var comment = _comments.FirstOrDefault(c => c.Id == commentId);
+        if (comment == null || comment.ProfileUserId != currentUserId)
+        {
+            return false;
+        }
+
+        _comments.Remove(comment);
+        return true;
+    }
+
+    public bool LikeComment(int commentId, int userId)
+    {
+        var comment = _comments.FirstOrDefault(c => c.Id == commentId);
+        if (comment == null)
+            return false;
+
+        if (!_commentVotes.ContainsKey(commentId))
+            _commentVotes[commentId] = new();
+
+        if (_commentVotes[commentId].TryGetValue(userId, out var existingVote))
+        {
+            if (existingVote == 1) // Already liked
+                return true;
+            
+            if (existingVote == -1) // Changing from dislike to like
+                comment.Dislikes--;
+            
+            _commentVotes[commentId][userId] = 1;
+            comment.Likes++;
+        }
+        else
+        {
+            _commentVotes[commentId][userId] = 1;
+            comment.Likes++;
+        }
+
+        return true;
+    }
+
+    public bool DislikeComment(int commentId, int userId)
+    {
+        var comment = _comments.FirstOrDefault(c => c.Id == commentId);
+        if (comment == null)
+            return false;
+
+        if (!_commentVotes.ContainsKey(commentId))
+            _commentVotes[commentId] = new();
+
+        if (_commentVotes[commentId].TryGetValue(userId, out var existingVote))
+        {
+            if (existingVote == -1) // Already disliked
+                return true;
+
+            if (existingVote == 1) // Changing from like to dislike
+                comment.Likes--;
+
+            _commentVotes[commentId][userId] = -1;
+            comment.Dislikes++;
+        }
+        else
+        {
+            _commentVotes[commentId][userId] = -1;
+            comment.Dislikes++;
+        }
+
+        return true;
+    }
+
+    public int? GetUserVote(int commentId, int userId)
+    {
+        if (_commentVotes.TryGetValue(commentId, out var votes))
+        {
+            if (votes.TryGetValue(userId, out var vote))
+                return vote;
+        }
+        return null;
     }
 }
 
