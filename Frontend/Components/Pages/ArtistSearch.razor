@@ -1,19 +1,24 @@
 @page "/artists"
 @rendermode InteractiveServer
 @inject ArtistApiService Api
+@inject NavigationManager Nav
 
 <PageTitle>Artist Search</PageTitle>
 
 <div class="artist-search-page">
 
-    @* ── Search bar (with inline clear × when there is text) ── *@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
         <SearchBar @bind-Value="_nameQuery"
                    Placeholder="Search by artist name…"
                    OnSearch="RunSearch" />
+
+        <button class="btn btn-outline-success"
+                @onclick="GoToRandomArtist"
+                disabled="@(_results == null || _results.Count == 0)">
+            I'm feeling lucky
+        </button>
     </div>
 
-    @* ── Filters toggle ── *@
     <button class="btn btn-sm btn-outline-dark mb-3" @onclick="ToggleFilters">
         @(_filtersOpen ? "Hide filters ▲" : "Show filters ▼")
     </button>
@@ -23,17 +28,18 @@
         <div class="filters-panel card p-3 mb-3">
             <div class="row g-3">
 
-                @* PROJ-7 – Year range *@
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Active from</label>
                     <input class="form-control" type="number" placeholder="e.g. 1990"
                            @bind="_yearFrom" @bind:event="oninput" />
                 </div>
+
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Active to</label>
                     <input class="form-control" type="number" placeholder="e.g. 2010"
                            @bind="_yearTo" @bind:event="oninput" />
                 </div>
+
                 <div class="col-md-3 d-flex align-items-end">
                     <Checkbox Id="onlyActive"
                               Label="Only currently active"
@@ -41,7 +47,6 @@
                               CheckedChanged="OnOnlyActiveChanged" />
                 </div>
 
-                @* PROJ-8 – Language checkboxes *@
                 @if (_availableLanguages.Count > 0)
                 {
                     <div class="col-12">
@@ -60,7 +65,6 @@
                     </div>
                 }
 
-                @* Genre checkboxes *@
                 @if (_availableGenres.Count > 0)
                 {
                     <div class="col-12">
@@ -88,11 +92,11 @@
         </div>
     }
 
-    @* ── Active filter badges ── *@
     @if (HasActiveFilters)
     {
         <div class="active-filters mb-3 d-flex flex-wrap gap-1 align-items-center">
             <span class="text-muted me-1">Active:</span>
+
             @if (!string.IsNullOrWhiteSpace(_nameQuery))
             {
                 <span class="badge bg-secondary">
@@ -100,6 +104,7 @@
                     <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _nameQuery = string.Empty; await RunSearch(); }" />
                 </span>
             }
+
             @if (_yearFrom.HasValue)
             {
                 <span class="badge bg-secondary">
@@ -107,6 +112,7 @@
                     <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _yearFrom = null; await RunSearch(); }" />
                 </span>
             }
+
             @if (_yearTo.HasValue)
             {
                 <span class="badge bg-secondary">
@@ -114,6 +120,7 @@
                     <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _yearTo = null; await RunSearch(); }" />
                 </span>
             }
+
             @if (_onlyActive)
             {
                 <span class="badge bg-secondary">
@@ -121,6 +128,7 @@
                     <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _onlyActive = false; await RunSearch(); }" />
                 </span>
             }
+
             @foreach (var lang in _selectedLanguages.ToList())
             {
                 var l = lang;
@@ -129,6 +137,7 @@
                     <button class="btn-close btn-sm ms-1" @onclick="async () => { _selectedLanguages.Remove(l); await RunSearch(); }" />
                 </span>
             }
+
             @foreach (var genre in _selectedGenres.ToList())
             {
                 var g = genre;
@@ -140,7 +149,6 @@
         </div>
     }
 
-    @* ── Results ── *@
     @if (_loading)
     {
         <p class="text-muted">Loading…</p>
@@ -220,15 +228,19 @@
     {
         var genresTask = Api.GetGenresAsync();
         var langsTask = Api.GetLanguagesAsync();
+
         await Task.WhenAll(genresTask, langsTask);
+
         _availableGenres = genresTask.Result;
         _availableLanguages = langsTask.Result;
+
         await RunSearch();
     }
 
     private async Task RunSearch()
     {
         _loading = true;
+
         _results = await Api.SearchAsync(
             _nameQuery,
             _selectedGenres.Count > 0 ? [.. _selectedGenres] : null,
@@ -236,6 +248,7 @@
             _yearFrom,
             _yearTo,
             _onlyActive);
+
         _loading = false;
     }
 
@@ -251,8 +264,11 @@
 
     private async Task ToggleItem(HashSet<string> set, string value, bool add)
     {
-        if (add) set.Add(value);
-        else set.Remove(value);
+        if (add)
+            set.Add(value);
+        else
+            set.Remove(value);
+
         await RunSearch();
     }
 
@@ -265,5 +281,16 @@
     {
         _onlyActive = value;
         await RunSearch();
+    }
+
+    private void GoToRandomArtist()
+    {
+        if (_results == null || _results.Count == 0)
+            return;
+
+        var random = new Random();
+        var artist = _results[random.Next(_results.Count)];
+
+        Nav.NavigateTo($"/artists/{artist.Id}");
     }
 }
