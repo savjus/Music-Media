@@ -83,6 +83,9 @@ else if (profile is not null)
         <li class="nav-item">
             <button class="nav-link @(activeTab == "tours" ? "active" : "")" @onclick="@(() => activeTab = "tours")">Tours</button>
         </li>
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "comments" ? "active" : "")" @onclick="@(() => activeTab = "comments")">Comments</button>
+        </li>
     </ul>
 
     @switch (activeTab)
@@ -95,6 +98,12 @@ else if (profile is not null)
             break;
         case "tours":
             <ToursSection Tours="@tours" />
+            break;
+        case "comments":
+            <CommentsSection ProfileUserId="@(profile?.Profile?.UserId ?? 0)"
+                            Comments="@comments"
+                            OnCommentAdded="@HandleCommentAdded"
+                            OnCommentDeleted="@HandleCommentDeleted" />
             break;
         default:
             <OverviewSection Albums="@albums" Tracks="@tracks" Tours="@tours" />
@@ -112,6 +121,7 @@ else if (profile is not null)
     private List<AlbumDto> albums = new();
     private List<TrackDto> tracks = new();
     private List<TourDto> tours = new();
+    private List<CommentDto> comments = new();
 
     protected override void OnInitialized()
     {
@@ -206,6 +216,8 @@ else if (profile is not null)
                     albums = profile.Albums ?? new();
                     tracks = profile.Tracks ?? new();
                     tours = profile.Tours ?? new();
+                    comments = profile.Comments ?? new();
+                    
                     if (profile.Profile is not null)
                     {
                         editableProfile = new UserProfileDto
@@ -231,5 +243,19 @@ else if (profile is not null)
                 StateHasChanged();
             }
         }
+    }
+
+    private Task HandleCommentAdded(CommentDto comment)
+    {
+        // Comments list is already updated by the CommentsSection component
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCommentDeleted(int commentId)
+    {
+        // Comments list is already updated by the CommentsSection component
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 }

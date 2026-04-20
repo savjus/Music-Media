@@ -44,3 +44,13 @@ public class Tour
     public bool IsPast => EndDate < DateTime.UtcNow.Date;
 }
 
+public class Comment
+{
+    public int Id { get; set; }
+    public int ProfileUserId { get; set; }
+    public int AuthorUserId { get; set; }
+    public string AuthorName { get; set; } = "";
+    public string Content { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
+

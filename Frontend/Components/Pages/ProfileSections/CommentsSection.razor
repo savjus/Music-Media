@@ -1,0 +1,181 @@
+@using Frontend.Models
+@inject Frontend.Services.ProfileApiService ProfileApi
+@inject Frontend.Services.AuthService Auth
+@rendermode InteractiveServer
+
+<div class="comments-section mt-5">
+    <h5 class="mb-3">Comments (@(Comments?.Count ?? 0))</h5>
+
+    @if (IsAuthenticated)
+    {
+        <div class="card mb-4 p-3">
+            <h6 class="mb-3">Leave a Comment</h6>
+            @if (!string.IsNullOrEmpty(SubmitError))
+            {
+                <div class="alert alert-danger mb-3">@SubmitError</div>
+            }
+            <textarea class="form-control mb-2"
+                      @bind="NewCommentContent"
+                      placeholder="Enter your comment (max 500 characters)"
+                      maxlength="500"
+                      rows="3"
+                      disabled="@IsSubmitting"></textarea>
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">@(NewCommentContent?.Length ?? 0) / 500</small>
+                <button class="btn btn-primary btn-sm"
+                        @onclick="AddComment"
+                        disabled="@(string.IsNullOrWhiteSpace(NewCommentContent) || IsSubmitting)">
+                    @if (IsSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Submitting...</span>
+                    }
+                    else
+                    {
+                        <span>Comment</span>
+                    }
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            <small>Please <a href="/login">log in</a> to leave a comment.</small>
+        </div>
+    }
+
+    @if (Comments != null && Comments.Count == 0)
+    {
+        <p class="text-muted">No comments yet. Be the first!</p>
+    }
+    else if (Comments != null)
+    {
+        <div class="comments-list">
+            @foreach (var comment in Comments)
+            {
+                <div class="card mb-3 p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>@comment.AuthorName</strong>
+                            <small class="text-muted ms-2">@FormatDate(comment.CreatedAt)</small>
+                        </div>
+                        @if (IsAuthenticated && CurrentUserId == comment.AuthorUserId)
+                        {
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => DeleteComment(comment.Id)"
+                                    disabled="@(IsDeletingCommentId == comment.Id)">
+                                @if (IsDeletingCommentId == comment.Id)
+                                {
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                }
+                                else
+                                {
+                                    <span>Delete</span>
+                                }
+                            </button>
+                        }
+                    </div>
+                    <p class="mb-0">@comment.Content</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int ProfileUserId { get; set; }
+
+    [Parameter]
+    public List<CommentDto>? Comments { get; set; }
+
+    [Parameter]
+    public EventCallback<CommentDto> OnCommentAdded { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnCommentDeleted { get; set; }
+
+    private string? NewCommentContent;
+    private bool IsSubmitting = false;
+    private int? IsDeletingCommentId;
+    private string? SubmitError;
+    private bool IsAuthenticated => !string.IsNullOrEmpty(Auth.Token);
+    private int CurrentUserId => Auth.UserId;
+
+    protected override void OnParametersSet()
+    {
+        // Reset comment form when profile changes
+        NewCommentContent = "";
+        SubmitError = null;
+    }
+
+    private async Task AddComment()
+    {
+        if (string.IsNullOrWhiteSpace(NewCommentContent) || IsSubmitting)
+            return;
+
+        IsSubmitting = true;
+        SubmitError = null;
+        try
+        {
+            var (result, error) = await ProfileApi.AddCommentWithErrorAsync(ProfileUserId, NewCommentContent);
+            if (result != null)
+            {
+                NewCommentContent = "";
+                Comments?.Insert(0, result);
+                await OnCommentAdded.InvokeAsync(result);
+            }
+            else
+            {
+                SubmitError = error ?? "Failed to submit comment. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            SubmitError = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    private async Task DeleteComment(int commentId)
+    {
+        if (IsDeletingCommentId.HasValue)
+            return;
+
+        IsDeletingCommentId = commentId;
+        try
+        {
+            var success = await ProfileApi.DeleteCommentAsync(commentId);
+            if (success)
+            {
+                Comments?.RemoveAll(c => c.Id == commentId);
+                await OnCommentDeleted.InvokeAsync(commentId);
+            }
+        }
+        finally
+        {
+            IsDeletingCommentId = null;
+        }
+    }
+
+    private string FormatDate(DateTime date)
+    {
+        var now = DateTime.UtcNow;
+        var diff = now - date;
+
+        if (diff.TotalSeconds < 60)
+            return "just now";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7)
+            return $"{(int)diff.TotalDays}d ago";
+
+        return date.ToString("yyyy-MM-dd");
+    }
+}

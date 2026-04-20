@@ -4,6 +4,7 @@ public class UserProfileService
     private readonly List<Album> _albums = new();
     private readonly List<Track> _tracks = new();
     private readonly List<Tour> _tours = new();
+    private readonly List<Comment> _comments = new();
 
     public UserProfileService()
     {
@@ -326,6 +327,31 @@ public class UserProfileService
         tour.Id = _tours.Any() ? _tours.Max(t => t.Id) + 1 : 1;
         _tours.Add(tour);
 
+        return true;
+    }
+
+    public List<Comment> GetCommentsForProfile(int profileUserId) =>
+        _comments.Where(c => c.ProfileUserId == profileUserId)
+                  .OrderByDescending(c => c.CreatedAt)
+                  .ToList();
+
+    public bool AddComment(Comment comment)
+    {
+        comment.Id = _comments.Any() ? _comments.Max(c => c.Id) + 1 : 1;
+        comment.CreatedAt = DateTime.UtcNow;
+        _comments.Add(comment);
+        return true;
+    }
+
+    public bool DeleteComment(int commentId, int currentUserId)
+    {
+        var comment = _comments.FirstOrDefault(c => c.Id == commentId);
+        if (comment == null || (comment.AuthorUserId != currentUserId && comment.ProfileUserId != currentUserId))
+        {
+            return false;
+        }
+
+        _comments.Remove(comment);
         return true;
     }
 }

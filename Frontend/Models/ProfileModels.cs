@@ -43,11 +43,22 @@ public class TourDto
     public bool IsPast { get; set; }
 }
 
+public class CommentDto
+{
+    public int Id { get; set; }
+    public int ProfileUserId { get; set; }
+    public int AuthorUserId { get; set; }
+    public string AuthorName { get; set; } = "";
+    public string Content { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
+
 public class ProfileResponseDto
 {
     public UserProfileDto Profile { get; set; } = new();
     public List<AlbumDto> Albums { get; set; } = new();
     public List<TrackDto> Tracks { get; set; } = new();
     public List<TourDto> Tours { get; set; } = new();
+    public List<CommentDto> Comments { get; set; } = new();
 }
 

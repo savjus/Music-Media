@@ -184,5 +184,70 @@ public class ProfileApiService
 
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<List<CommentDto>?> GetCommentsAsync(int userId)
+    {
+        var client = _factory.CreateClient("auth");
+        var response = await client.GetAsync($"api/profile/{userId}/comments");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<List<CommentDto>>();
+    }
+
+    public async Task<(CommentDto? Comment, string? Error)> AddCommentWithErrorAsync(int userId, string content)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var request = new { Content = content };
+        var response = await client.PostAsJsonAsync($"api/profile/{userId}/comments", request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            string? errorMessage = null;
+            try
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                errorMessage = errorContent ?? response.ReasonPhrase ?? "Unknown error";
+            }
+            catch
+            {
+                errorMessage = response.ReasonPhrase ?? "Unknown error";
+            }
+            return (null, errorMessage);
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<CommentDto>();
+        return (result, null);
+    }
+
+    public async Task<CommentDto?> AddCommentAsync(int userId, string content)
+    {
+        var (comment, _) = await AddCommentWithErrorAsync(userId, content);
+        return comment;
+    }
+
+    public async Task<bool> DeleteCommentAsync(int commentId)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.DeleteAsync($"api/profile/comments/{commentId}");
+        return response.IsSuccessStatusCode;
+    }
 }
 

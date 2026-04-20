@@ -34,7 +34,7 @@ public class AuthService
         }
 
         Token = result.Token;
-        CurrentUser = new UserInfo { Username = result.Username, Email = result.Email };
+        CurrentUser = ParseUserInfo(Token);
         OnAuthChanged?.Invoke();
         return true;
     }
@@ -82,8 +82,12 @@ public class AuthService
         try
         {
             var payload = ParsePayload(token);
+            var userIdStr = TryGetString(payload, "sub") ?? TryGetString(payload, "userid");
+            int.TryParse(userIdStr, out var userId);
+            
             return new UserInfo
             {
+                UserId = userId,
                 Username = TryGetString(payload, "name") ?? "",
                 Email = TryGetString(payload, "email") ?? ""
             };
@@ -113,6 +117,8 @@ public class AuthService
     {
         return el.TryGetProperty(prop, out var v) ? v.GetString() : null;
     }
+
+    public int UserId => CurrentUser?.UserId ?? 0;
 
     // DTO backend responsams 
     private class LoginResult
