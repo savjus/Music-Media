@@ -152,6 +152,7 @@ else
                                     <th>Album</th>
                                     <th>Genre</th>
                                     <th>Language</th>
+                                    <th>BPM</th>
                                     <th>Length</th>
                                     <th></th>
                                 </tr>
@@ -168,6 +169,7 @@ else
                                         <td class="text-break">@albumTitle</td>
                                         <td class="text-break">@t.Genre</td>
                                         <td class="text-break">@t.Language</td>
+                                        <td>@(t.BeatsPerMinute?.ToString() ?? "-")</td>
                                         <td>@(t.Length?.ToString(@"mm\:ss") ?? "-")</td>
                                         <td class="text-break">
                                             @if (!string.IsNullOrWhiteSpace(t.ExternalLink))

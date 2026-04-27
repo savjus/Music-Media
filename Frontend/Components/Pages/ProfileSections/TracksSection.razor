@@ -62,6 +62,17 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">Beats per minute (BPM)</label>
+                <input class="form-control"
+                       type="number"
+                       min="1"
+                       max="300"
+                       @bind="newTrackBeatsPerMinute"
+                       @bind:event="oninput"
+                       placeholder="e.g. 120" />
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">External link</label>
                 <input class="form-control"
                        @bind="newTrackExternalLink"
@@ -94,6 +105,7 @@
                         <th>Album</th>
                         <th>Genre</th>
                         <th>Language</th>
+                        <th>BPM</th>
                         <th>Length</th>
                         <th></th>
                     </tr>
@@ -110,6 +122,7 @@
                             <td class="text-break">@albumTitle</td>
                             <td class="text-break">@t.Genre</td>
                             <td class="text-break">@t.Language</td>
+                            <td>@(t.BeatsPerMinute?.ToString() ?? "-")</td>
                             <td>@(t.Length?.ToString(@"mm\:ss") ?? "-")</td>
                             <td class="text-break">
                                 @if (!string.IsNullOrWhiteSpace(t.ExternalLink))
@@ -136,6 +149,7 @@
     private string newTrackGenre = string.Empty;
     private string newTrackLanguage = string.Empty;
     private string newTrackLength = string.Empty;
+    private int? newTrackBeatsPerMinute;
     private string newTrackExternalLink = string.Empty;
     private string errorMessage = string.Empty;
 
@@ -181,12 +195,19 @@
             return;
         }
 
+        if (newTrackBeatsPerMinute.HasValue && (newTrackBeatsPerMinute < 1 || newTrackBeatsPerMinute > 300))
+        {
+            errorMessage = "BPM must be between 1 and 300.";
+            return;
+        }
+
         var newTrack = new TrackDto
         {
             Title = newTrackTitle.Trim(),
             AlbumId = selectedAlbumId,
             Genre = newTrackGenre.Trim(),
             Language = newTrackLanguage.Trim(),
+            BeatsPerMinute = newTrackBeatsPerMinute,
             Length = parsedLength,
             ExternalLink = newTrackExternalLink.Trim()
         };
@@ -206,6 +227,7 @@
         newTrackGenre = string.Empty;
         newTrackLanguage = string.Empty;
         newTrackLength = string.Empty;
+        newTrackBeatsPerMinute = null;
         newTrackExternalLink = string.Empty;
     }
 }

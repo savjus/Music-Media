@@ -120,6 +120,7 @@ public class UserProfileService
                 Title = "Morning Lights",
                 Genre = "Pop",
                 Language = "English",
+                BeatsPerMinute = 118,
                 Length = TimeSpan.FromMinutes(3.5),
                 ExternalLink = "https://example.com/morning-lights"
             },
@@ -131,6 +132,7 @@ public class UserProfileService
                 Title = "City Nights",
                 Genre = "Pop",
                 Language = "English",
+                BeatsPerMinute = 124,
                 Length = TimeSpan.FromMinutes(4),
                 ExternalLink = "https://example.com/city-nights"
             },
@@ -142,6 +144,7 @@ public class UserProfileService
                 Title = "Miles Ahead",
                 Genre = "Rock",
                 Language = "English",
+                BeatsPerMinute = 132,
                 Length = TimeSpan.FromMinutes(5),
                 ExternalLink = "https://example.com/miles-ahead"
             },
@@ -153,6 +156,7 @@ public class UserProfileService
                 Title = "Glass Neon",
                 Genre = "Synth-Pop",
                 Language = "English",
+                BeatsPerMinute = 126,
                 Length = TimeSpan.FromMinutes(3.8),
                 ExternalLink = "https://example.com/glass-neon"
             },
@@ -164,6 +168,7 @@ public class UserProfileService
                 Title = "Harbor Lights",
                 Genre = "Synth-Pop",
                 Language = "English",
+                BeatsPerMinute = 122,
                 Length = TimeSpan.FromMinutes(4.1),
                 ExternalLink = "https://example.com/harbor-lights"
             },
@@ -175,6 +180,7 @@ public class UserProfileService
                 Title = "Soft Static",
                 Genre = "Electronic",
                 Language = "English",
+                BeatsPerMinute = 110,
                 Length = TimeSpan.FromMinutes(4.4),
                 ExternalLink = "https://example.com/soft-static"
             },
@@ -186,6 +192,7 @@ public class UserProfileService
                 Title = "Paper Boats",
                 Genre = "Folk",
                 Language = "Lithuanian",
+                BeatsPerMinute = 94,
                 Length = TimeSpan.FromMinutes(3.2),
                 ExternalLink = "https://example.com/paper-boats"
             },
@@ -197,6 +204,7 @@ public class UserProfileService
                 Title = "Amber Wind",
                 Genre = "Indie",
                 Language = "Lithuanian",
+                BeatsPerMinute = 102,
                 Length = TimeSpan.FromMinutes(4.0),
                 ExternalLink = "https://example.com/amber-wind"
             }
@@ -269,6 +277,74 @@ public class UserProfileService
 
     public List<Track> GetTracksForUser(int userId) =>
         _tracks.Where(t => t.UserId == userId).ToList();
+
+    public List<TrackSearchResult> SearchTracks(string? name, List<string>? genres, int? bpmFrom, int? bpmTo)
+    {
+        var q = _tracks.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            q = q.Where(t => t.Title.Contains(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (genres != null && genres.Count > 0)
+        {
+            q = q.Where(t => genres.Contains(t.Genre));
+        }
+
+        if (bpmFrom.HasValue)
+        {
+            q = q.Where(t => t.BeatsPerMinute.HasValue && t.BeatsPerMinute.Value >= bpmFrom.Value);
+        }
+
+        if (bpmTo.HasValue)
+        {
+            q = q.Where(t => t.BeatsPerMinute.HasValue && t.BeatsPerMinute.Value <= bpmTo.Value);
+        }
+
+        var profileNamesByUserId = _profiles.ToDictionary(p => p.UserId, p => p.DisplayName);
+        var albumTitlesById = _albums.ToDictionary(a => a.Id, a => a.Title);
+
+        return q
+            .ToList()
+            .Select(t =>
+            {
+                profileNamesByUserId.TryGetValue(t.UserId, out var artistName);
+
+                string? albumTitle = null;
+                if (t.AlbumId.HasValue)
+                {
+                    albumTitlesById.TryGetValue(t.AlbumId.Value, out albumTitle);
+                }
+
+                return new TrackSearchResult
+                {
+                    Id = t.Id,
+                    UserId = t.UserId,
+                    ArtistName = artistName ?? "Unknown artist",
+                    AlbumId = t.AlbumId,
+                    AlbumTitle = albumTitle,
+                    Title = t.Title,
+                    Genre = t.Genre,
+                    Language = t.Language,
+                    BeatsPerMinute = t.BeatsPerMinute,
+                    Length = t.Length,
+                    ExternalLink = t.ExternalLink
+                };
+            })
+            .OrderBy(t => t.Title)
+            .ToList();
+    }
+
+    public List<string> GetTrackGenres()
+    {
+        return _tracks
+            .Select(t => t.Genre)
+            .Where(g => !string.IsNullOrWhiteSpace(g))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(g => g)
+            .ToList();
+    }
 
     public List<Tour> GetToursForUser(int userId) =>
         _tours.Where(t => t.UserId == userId).ToList();
