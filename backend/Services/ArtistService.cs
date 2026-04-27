@@ -3,21 +3,21 @@ public class ArtistService
 {
     private static readonly List<Artist> _data = new()
     {
-        new Artist { Id = 1,  Name = "Andrius Mamontovas", Genre = "Rock",        Language = "Lithuanian",  ActiveFrom = 1989,                Country = "Lithuania"  },
-        new Artist { Id = 2,  Name = "Skamp",              Genre = "Pop",         Language = "English",   ActiveFrom = 1999, ActiveTo = 2005, Country = "Lithuania"  },
-        new Artist { Id = 3,  Name = "Jurga",              Genre = "Pop",         Language = "Lithuanian",  ActiveFrom = 2001,                Country = "Lithuania"  },
-        new Artist { Id = 4,  Name = "The Beatles",        Genre = "Rock",        Language = "English",   ActiveFrom = 1960, ActiveTo = 1970, Country = "UK"       },
-        new Artist { Id = 5,  Name = "Radiohead",          Genre = "Alternative", Language = "English",   ActiveFrom = 1985,                Country = "UK"       },
-        new Artist { Id = 6,  Name = "Björk",              Genre = "Electronic",  Language = "English",   ActiveFrom = 1986,                Country = "Iceland"  },
-        new Artist { Id = 7,  Name = "Coldplay",           Genre = "Pop",         Language = "English",   ActiveFrom = 1996,                Country = "UK"       },
-        new Artist { Id = 8,  Name = "Stromae",            Genre = "Electronic",  Language = "French",  ActiveFrom = 2009,                Country = "Belgium"  },
-        new Artist { Id = 9,  Name = "Rammstein",          Genre = "Metal",       Language = "German",  ActiveFrom = 1994,                Country = "Germany"  },
-        new Artist { Id = 10, Name = "Daft Punk",          Genre = "Electronic",  Language = "English",   ActiveFrom = 1993, ActiveTo = 2021, Country = "France"   },
-        new Artist { Id = 11, Name = "Beyoncé",            Genre = "R&B",         Language = "English",   ActiveFrom = 1997,                Country = "USA"      },
-        new Artist { Id = 12, Name = "Kendrick Lamar",     Genre = "Hip-Hop",     Language = "English",   ActiveFrom = 2003,                Country = "USA"      },
-        new Artist { Id = 13, Name = "G&G Sindikatas",     Genre = "Hip-Hop",     Language = "Lithuanian",  ActiveFrom = 1994,                Country = "Lithuania"  },
-        new Artist { Id = 14, Name = "Sigur Rós",          Genre = "Post-Rock",   Language = "Icelandic",   ActiveFrom = 1994,                Country = "Iceland"  },
-        new Artist { Id = 15, Name = "Seu Jorge",          Genre = "MPB",         Language = "Portuguese", ActiveFrom = 1998,                Country = "Brazil"   },
+        new Artist { Id = 101, Name = "Andrius Mamontovas", Genre = "Rock",        Language = "Lithuanian",  ActiveFrom = 1989,                Country = "Lithuania"  },
+        new Artist { Id = 102, Name = "Skamp",              Genre = "Pop",         Language = "English",   ActiveFrom = 1999, ActiveTo = 2005, Country = "Lithuania"  },
+        new Artist { Id = 103, Name = "Jurga",              Genre = "Pop",         Language = "Lithuanian",  ActiveFrom = 2001,                Country = "Lithuania"  },
+        new Artist { Id = 104, Name = "The Beatles",        Genre = "Rock",        Language = "English",   ActiveFrom = 1960, ActiveTo = 1970, Country = "UK"       },
+        new Artist { Id = 105, Name = "Radiohead",          Genre = "Alternative", Language = "English",   ActiveFrom = 1985,                Country = "UK"       },
+        new Artist { Id = 106, Name = "Björk",              Genre = "Electronic",  Language = "English",   ActiveFrom = 1986,                Country = "Iceland"  },
+        new Artist { Id = 107, Name = "Coldplay",           Genre = "Pop",         Language = "English",   ActiveFrom = 1996,                Country = "UK"       },
+        new Artist { Id = 108, Name = "Stromae",            Genre = "Electronic",  Language = "French",  ActiveFrom = 2009,                Country = "Belgium"  },
+        new Artist { Id = 109, Name = "Rammstein",          Genre = "Metal",       Language = "German",  ActiveFrom = 1994,                Country = "Germany"  },
+        new Artist { Id = 110, Name = "Daft Punk",          Genre = "Electronic",  Language = "English",   ActiveFrom = 1993, ActiveTo = 2021, Country = "France"   },
+        new Artist { Id = 111, Name = "Beyoncé",            Genre = "R&B",         Language = "English",   ActiveFrom = 1997,                Country = "USA"      },
+        new Artist { Id = 112, Name = "Kendrick Lamar",     Genre = "Hip-Hop",     Language = "English",   ActiveFrom = 2003,                Country = "USA"      },
+        new Artist { Id = 113, Name = "G&G Sindikatas",     Genre = "Hip-Hop",     Language = "Lithuanian",  ActiveFrom = 1994,                Country = "Lithuania"  },
+        new Artist { Id = 114, Name = "Sigur Rós",          Genre = "Post-Rock",   Language = "Icelandic",   ActiveFrom = 1994,                Country = "Iceland"  },
+        new Artist { Id = 115, Name = "Seu Jorge",          Genre = "MPB",         Language = "Portuguese", ActiveFrom = 1998,                Country = "Brazil"   },
     };
 
     public List<Artist> Search(string? name, List<string>? genres, List<string>? languages, int? yearFrom, int? yearTo, bool onlyActive)

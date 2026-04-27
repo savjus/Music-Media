@@ -10,14 +10,14 @@ public class UserProfileService
 
     public UserProfileService()
     {
-        // Seed demo data for a single example user with Id = 1
+        // Seed demo profile data aligned with artist IDs from ArtistService (101+)
         _profiles.AddRange(new[]
         {
             new UserProfile
             {
-                UserId = 1,
-                DisplayName = "Demo Artist",
-                Bio = "Example musician profile used for demo purposes.",
+                UserId = 101,
+                DisplayName = "Andrius Mamontovas",
+                Bio = "Lithuanian rock artist and songwriter.",
                 DefaultLanguage = "English",
                 Genres = new List<string> { "Pop", "Rock" },
                 SpotifyUrl = "https://open.spotify.com/",
@@ -25,23 +25,23 @@ public class UserProfileService
             },
             new UserProfile
             {
-                UserId = 2,
-                DisplayName = "Neon Harbor",
-                Bio = "Synth-pop duo blending retro textures with modern vocals.",
+                UserId = 102,
+                DisplayName = "Skamp",
+                Bio = "Lithuanian pop group known for upbeat English-language songs.",
                 DefaultLanguage = "English",
-                Genres = new List<string> { "Synth-Pop", "Electronic" },
-                SpotifyUrl = "https://open.spotify.com/artist/neon-harbor",
-                YouTubeUrl = "https://www.youtube.com/@neonharbor"
+                Genres = new List<string> { "Pop" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
             },
             new UserProfile
             {
-                UserId = 3,
-                DisplayName = "Baltic Echo",
-                Bio = "Indie folk project focused on acoustic storytelling and coastal moods.",
+                UserId = 103,
+                DisplayName = "Jurga",
+                Bio = "Lithuanian pop artist with melodic and introspective songwriting.",
                 DefaultLanguage = "Lithuanian",
-                Genres = new List<string> { "Indie", "Folk" },
-                SpotifyUrl = "https://open.spotify.com/artist/baltic-echo",
-                YouTubeUrl = "https://www.youtube.com/@balticecho"
+                Genres = new List<string> { "Pop" },
+                SpotifyUrl = "https://open.spotify.com/",
+                YouTubeUrl = "https://www.youtube.com/"
             }
         }
         );
@@ -51,7 +51,7 @@ public class UserProfileService
             new Album
             {
                 Id = 1,
-                UserId = 1,
+                UserId = 101,
                 Title = "First Steps",
                 Year = 2015,
                 Genre = "Pop",
@@ -61,7 +61,7 @@ public class UserProfileService
             new Album
             {
                 Id = 2,
-                UserId = 1,
+                UserId = 101,
                 Title = "On The Road",
                 Year = 2019,
                 Genre = "Rock",
@@ -71,7 +71,7 @@ public class UserProfileService
             new Album
             {
                 Id = 3,
-                UserId = 2,
+                UserId = 102,
                 Title = "Midnight Signals",
                 Year = 2020,
                 Genre = "Synth-Pop",
@@ -81,7 +81,7 @@ public class UserProfileService
             new Album
             {
                 Id = 4,
-                UserId = 2,
+                UserId = 102,
                 Title = "Afterglow City",
                 Year = 2023,
                 Genre = "Electronic",
@@ -91,7 +91,7 @@ public class UserProfileService
             new Album
             {
                 Id = 5,
-                UserId = 3,
+                UserId = 103,
                 Title = "Coastal Letters",
                 Year = 2018,
                 Genre = "Folk",
@@ -101,7 +101,7 @@ public class UserProfileService
             new Album
             {
                 Id = 6,
-                UserId = 3,
+                UserId = 103,
                 Title = "Northern Pines",
                 Year = 2022,
                 Genre = "Indie",
@@ -115,7 +115,7 @@ public class UserProfileService
             new Track
             {
                 Id = 1,
-                UserId = 1,
+                UserId = 101,
                 AlbumId = 1,
                 Title = "Morning Lights",
                 Genre = "Pop",
@@ -126,7 +126,7 @@ public class UserProfileService
             new Track
             {
                 Id = 2,
-                UserId = 1,
+                UserId = 101,
                 AlbumId = 1,
                 Title = "City Nights",
                 Genre = "Pop",
@@ -137,7 +137,7 @@ public class UserProfileService
             new Track
             {
                 Id = 3,
-                UserId = 1,
+                UserId = 101,
                 AlbumId = 2,
                 Title = "Miles Ahead",
                 Genre = "Rock",
@@ -148,7 +148,7 @@ public class UserProfileService
             new Track
             {
                 Id = 4,
-                UserId = 2,
+                UserId = 102,
                 AlbumId = 3,
                 Title = "Glass Neon",
                 Genre = "Synth-Pop",
@@ -159,7 +159,7 @@ public class UserProfileService
             new Track
             {
                 Id = 5,
-                UserId = 2,
+                UserId = 102,
                 AlbumId = 3,
                 Title = "Harbor Lights",
                 Genre = "Synth-Pop",
@@ -170,7 +170,7 @@ public class UserProfileService
             new Track
             {
                 Id = 6,
-                UserId = 2,
+                UserId = 102,
                 AlbumId = 4,
                 Title = "Soft Static",
                 Genre = "Electronic",
@@ -181,7 +181,7 @@ public class UserProfileService
             new Track
             {
                 Id = 7,
-                UserId = 3,
+                UserId = 103,
                 AlbumId = 5,
                 Title = "Paper Boats",
                 Genre = "Folk",
@@ -192,7 +192,7 @@ public class UserProfileService
             new Track
             {
                 Id = 8,
-                UserId = 3,
+                UserId = 103,
                 AlbumId = 6,
                 Title = "Amber Wind",
                 Genre = "Indie",
@@ -207,7 +207,7 @@ public class UserProfileService
             new Tour
             {
                 Id = 1,
-                UserId = 1,
+                UserId = 101,
                 Name = "Spring Lights Tour",
                 StartDate = DateTime.UtcNow.AddMonths(-6),
                 EndDate = DateTime.UtcNow.AddMonths(-5),
@@ -216,7 +216,7 @@ public class UserProfileService
             new Tour
             {
                 Id = 2,
-                UserId = 1,
+                UserId = 101,
                 Name = "Summer Festivals",
                 StartDate = DateTime.UtcNow.AddMonths(1),
                 EndDate = DateTime.UtcNow.AddMonths(2),
@@ -225,7 +225,7 @@ public class UserProfileService
             new Tour
             {
                 Id = 3,
-                UserId = 2,
+                UserId = 102,
                 Name = "Neon Nights",
                 StartDate = DateTime.UtcNow.AddMonths(-3),
                 EndDate = DateTime.UtcNow.AddMonths(-2),
@@ -234,7 +234,7 @@ public class UserProfileService
             new Tour
             {
                 Id = 4,
-                UserId = 2,
+                UserId = 102,
                 Name = "Afterglow Live",
                 StartDate = DateTime.UtcNow.AddMonths(2),
                 EndDate = DateTime.UtcNow.AddMonths(3),
@@ -243,7 +243,7 @@ public class UserProfileService
             new Tour
             {
                 Id = 5,
-                UserId = 3,
+                UserId = 103,
                 Name = "Forest Sessions",
                 StartDate = DateTime.UtcNow.AddMonths(-8),
                 EndDate = DateTime.UtcNow.AddMonths(-7),
@@ -252,7 +252,7 @@ public class UserProfileService
             new Tour
             {
                 Id = 6,
-                UserId = 3,
+                UserId = 103,
                 Name = "Coastal Evenings",
                 StartDate = DateTime.UtcNow.AddMonths(4),
                 EndDate = DateTime.UtcNow.AddMonths(5),
