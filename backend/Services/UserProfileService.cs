@@ -1,5 +1,6 @@
 public class UserProfileService
 {
+    private readonly AuthService _authService;
     private readonly List<UserProfile> _profiles = new();
     private readonly List<Album> _albums = new();
     private readonly List<Track> _tracks = new();
@@ -8,8 +9,10 @@ public class UserProfileService
     private readonly Dictionary<string, int> _commentLikes = new(); // Key: "commentId-userId" Value: 1 for like, -1 for dislike
     private readonly Dictionary<int, Dictionary<int, int>> _commentVotes = new(); // commentId -> userId -> vote (1 = like, -1 = dislike, 0 = none)
 
-    public UserProfileService()
+    public UserProfileService(AuthService authService)
     {
+        _authService = authService;
+
         // Seed demo profile data aligned with artist IDs from ArtistService (101+)
         _profiles.AddRange(new[]
         {
@@ -267,16 +270,54 @@ public class UserProfileService
                 Location = "Northern Europe"
             }
         });
+
+        EnsureProfilesExistForAllAccounts();
     }
 
-    public UserProfile? GetProfile(int userId) =>
-        _profiles.FirstOrDefault(p => p.UserId == userId);
+    public UserProfile? GetProfile(int userId)
+    {
+        EnsureProfileExistsForUser(userId);
+        return _profiles.FirstOrDefault(p => p.UserId == userId);
+    }
 
     public List<Album> GetAlbumsForUser(int userId) =>
         _albums.Where(a => a.UserId == userId).ToList();
 
     public List<Track> GetTracksForUser(int userId) =>
         _tracks.Where(t => t.UserId == userId).ToList();
+
+    public void EnsureProfileExistsForUser(int userId)
+    {
+        if (_profiles.Any(p => p.UserId == userId))
+        {
+            return;
+        }
+
+        var account = _authService.GetById(userId);
+        if (account == null)
+        {
+            return;
+        }
+
+        _profiles.Add(new UserProfile
+        {
+            UserId = account.Id,
+            DisplayName = account.Username,
+            Bio = "",
+            DefaultLanguage = "",
+            Genres = new List<string>(),
+            SpotifyUrl = "",
+            YouTubeUrl = ""
+        });
+    }
+
+    private void EnsureProfilesExistForAllAccounts()
+    {
+        foreach (var account in _authService.GetAllUsers())
+        {
+            EnsureProfileExistsForUser(account.Id);
+        }
+    }
 
     public List<TrackSearchResult> SearchTracks(string? name, List<string>? genres, int? bpmFrom, int? bpmTo)
     {
