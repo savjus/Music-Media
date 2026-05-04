@@ -59,8 +59,12 @@
                         <div>
                             <strong>@comment.AuthorName</strong>
                             <small class="text-muted ms-2">@FormatDate(comment.CreatedAt)</small>
+                            @if (IsAdmin && comment.AuthorUserId != CurrentUserId)
+                            {
+                                <small class="badge bg-warning ms-2">Admin can remove</small>
+                            }
                         </div>
-                        @if (IsAuthenticated && CurrentUserId == ProfileUserId)
+                        @if (IsAuthenticated && (CurrentUserId == ProfileUserId || IsAdmin))
                         {
                             <button class="btn btn-sm btn-outline-danger"
                                     @onclick="() => DeleteComment(comment.Id)"
@@ -129,6 +133,7 @@
     private string? SubmitError;
     private bool IsAuthenticated => !string.IsNullOrEmpty(Auth.Token);
     private int CurrentUserId => Auth.UserId;
+    private bool IsAdmin => Auth.IsAdmin;
 
     protected override void OnParametersSet()
     {

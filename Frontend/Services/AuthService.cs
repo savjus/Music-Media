@@ -86,11 +86,15 @@ public class AuthService
             var userIdStr = TryGetString(payload, "sub") ?? TryGetString(payload, "userid");
             int.TryParse(userIdStr, out var userId);
             
+            var isAdminStr = TryGetString(payload, "isAdmin");
+            bool.TryParse(isAdminStr, out var isAdmin);
+            
             return new UserInfo
             {
                 UserId = userId,
                 Username = TryGetString(payload, "name") ?? "",
-                Email = TryGetString(payload, "email") ?? ""
+                Email = TryGetString(payload, "email") ?? "",
+                IsAdmin = isAdmin
             };
         }
         catch
@@ -120,6 +124,8 @@ public class AuthService
     }
 
     public int UserId => CurrentUser?.UserId ?? 0;
+    
+    public bool IsAdmin => CurrentUser?.IsAdmin ?? false;
 
     // DTO backend responsams 
     private class LoginResult

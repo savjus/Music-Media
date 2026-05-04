@@ -10,9 +10,9 @@ public class AuthService
     // Pakeisti i EF callus kai bus DB
     private readonly List<UserAccount> _users =
     [
-        new UserAccount { Id = 1, Username = "admin", Email = "admin@musicmedia.com", Password = "Admin123!" },
-        new UserAccount { Id = 2, Username = "test", Email = "test", Password = "test"  },
-        new UserAccount { Id = 3, Username = "a", Email = "a", Password = "a"  },
+        new UserAccount { Id = 1, Username = "admin", Email = "admin@musicmedia.com", Password = "Admin123!", IsAdmin = true },
+        new UserAccount { Id = 2, Username = "test", Email = "test", Password = "test", IsAdmin = false  },
+        new UserAccount { Id = 3, Username = "a", Email = "a", Password = "a", IsAdmin = false  },
     ];
 
     public AuthService(IConfiguration config) => _config = config;
@@ -53,6 +53,7 @@ public class AuthService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.Username),
+            new Claim("isAdmin", user.IsAdmin.ToString()),
         };
 
         var token = new JwtSecurityToken(

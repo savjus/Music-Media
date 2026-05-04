@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 public class ProfileController : ControllerBase
 {
     private readonly UserProfileService _profiles;
+    private readonly AuthService _authService;
 
-    public ProfileController(UserProfileService profiles)
+    public ProfileController(UserProfileService profiles, AuthService authService)
     {
         _profiles = profiles;
+        _authService = authService;
     }
 
     public class ProfileResponse
@@ -245,7 +247,10 @@ public class ProfileController : ControllerBase
             return Unauthorized();
         }
 
-        var success = _profiles.DeleteComment(commentId, userId);
+        var user = _authService.GetById(userId);
+        bool isAdmin = user?.IsAdmin ?? false;
+
+        var success = _profiles.DeleteComment(commentId, userId, isAdmin);
 
         if (!success)
         {
