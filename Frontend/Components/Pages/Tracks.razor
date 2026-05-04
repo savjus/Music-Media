@@ -10,7 +10,10 @@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
         <SearchBar @bind-Value="_nameQuery"
                    Placeholder="Search by track name..."
-                   OnSearch="RunSearch" />
+                   OnSearch="RunSearch"
+                   OnInputChanged="OnSearchInputChanged"
+                   ShowAutoComplete="true"
+                   Suggestions="_autocompleteSuggestions" />
 
         <button class="btn btn-outline-success"
                 @onclick="GoToRandomTrackArtist"
@@ -177,6 +180,8 @@
     private List<string> _availableGenres = [];
     private HashSet<string> _selectedGenres = [];
     private List<TrackSearchDto> _results = [];
+    private List<TrackSearchDto> _allTracks = [];
+    private List<string> _autocompleteSuggestions = [];
 
     private bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_nameQuery) ||
@@ -187,7 +192,26 @@
     protected override async Task OnInitializedAsync()
     {
         _availableGenres = await Api.GetGenresAsync();
+        _allTracks = await Api.SearchAsync(null, null, null, null);
         await RunSearch();
+    }
+
+    private async Task OnSearchInputChanged(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            _autocompleteSuggestions.Clear();
+        }
+        else
+        {
+            _autocompleteSuggestions = _allTracks
+                .Where(t => t.Title.Contains(input, StringComparison.OrdinalIgnoreCase))
+                .Select(t => t.Title)
+                .Distinct()
+                .OrderBy(n => n)
+                .Take(5)
+                .ToList();
+        }
     }
 
     private async Task RunSearch()

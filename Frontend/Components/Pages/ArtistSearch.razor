@@ -10,7 +10,10 @@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
         <SearchBar @bind-Value="_nameQuery"
                    Placeholder="Search by artist name…"
-                   OnSearch="RunSearch" />
+                   OnSearch="RunSearch"
+                   OnInputChanged="OnSearchInputChanged"
+                   ShowAutoComplete="true"
+                   Suggestions="_autocompleteSuggestions" />
 
         <button class="btn btn-outline-success"
                 @onclick="GoToRandomArtist"
@@ -215,6 +218,8 @@
     private HashSet<string> _selectedGenres = [];
     private HashSet<string> _selectedLanguages = [];
     private List<ArtistDto> _results = [];
+    private List<ArtistDto> _allArtists = [];
+    private List<string> _autocompleteSuggestions = [];
 
     private bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_nameQuery) ||
@@ -228,13 +233,33 @@
     {
         var genresTask = Api.GetGenresAsync();
         var langsTask = Api.GetLanguagesAsync();
+        var allArtistsTask = Api.SearchAsync(null, null, null, null, null, false);
 
-        await Task.WhenAll(genresTask, langsTask);
+        await Task.WhenAll(genresTask, langsTask, allArtistsTask);
 
         _availableGenres = genresTask.Result;
         _availableLanguages = langsTask.Result;
+        _allArtists = allArtistsTask.Result;
 
         await RunSearch();
+    }
+
+    private async Task OnSearchInputChanged(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            _autocompleteSuggestions.Clear();
+        }
+        else
+        {
+            _autocompleteSuggestions = _allArtists
+                .Where(a => a.Name.Contains(input, StringComparison.OrdinalIgnoreCase))
+                .Select(a => a.Name)
+                .Distinct()
+                .OrderBy(n => n)
+                .Take(5)
+                .ToList();
+        }
     }
 
     private async Task RunSearch()

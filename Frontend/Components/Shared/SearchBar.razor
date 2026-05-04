@@ -1,12 +1,14 @@
-@* Search bar UI: text input, optional inline clear (×), optional Search button. Responsive, app-style. *@
-<div class="search-bar-row mb-3 d-flex flex-wrap gap-2 align-items-center">
+@* Search bar UI: text input with optional autocomplete suggestions, clear button, optional Search button. *@
+<div class="search-bar-row mb-3">
     <div class="search-bar-input-wrapper position-relative flex-grow-1" style="min-width: 200px;">
         <input class="form-control pe-4"
                type="text"
                placeholder="@Placeholder"
                value="@Value"
                @oninput="OnInput"
-               @onkeydown="OnKeyDown" />
+               @onkeydown="OnKeyDown"
+               autocomplete="off" />
+        
         @if (ShowClearButton && !string.IsNullOrWhiteSpace(Value))
         {
             <button type="button"
@@ -17,7 +19,23 @@
                 ×
             </button>
         }
+
+        @if (ShowAutoComplete && Suggestions != null && Suggestions.Count > 0 && !string.IsNullOrEmpty(Value))
+        {
+            <div class="dropdown-menu show w-100" style="display: block; position: absolute; top: 100%; left: 0; z-index: 1000; max-height: 300px; overflow-y: auto;">
+                @foreach (var suggestion in Suggestions.Take(5))
+                {
+                    var capturedSuggestion = suggestion;
+                    <button type="button"
+                            class="dropdown-item"
+                            @onclick="() => SelectSuggestion(capturedSuggestion)">
+                        @suggestion
+                    </button>
+                }
+            </div>
+        }
     </div>
+
     @if (ShowSearchButton)
     {
         <button class="btn btn-primary" @onclick="InvokeSearch">Search</button>
@@ -29,13 +47,17 @@
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
     [Parameter] public string Placeholder { get; set; } = "Search…";
     [Parameter] public EventCallback OnSearch { get; set; }
+    [Parameter] public EventCallback<string> OnInputChanged { get; set; }
     [Parameter] public bool ShowClearButton { get; set; } = true;
     [Parameter] public bool ShowSearchButton { get; set; } = true;
+    [Parameter] public bool ShowAutoComplete { get; set; } = false;
+    [Parameter] public List<string> Suggestions { get; set; } = [];
 
     private async Task OnInput(ChangeEventArgs e)
     {
         var v = e.Value?.ToString() ?? "";
         await ValueChanged.InvokeAsync(v);
+        await OnInputChanged.InvokeAsync(v);
     }
 
     private async Task OnKeyDown(KeyboardEventArgs e)
@@ -47,11 +69,19 @@
     private async Task ClearAndSearch()
     {
         await ValueChanged.InvokeAsync("");
+        await OnInputChanged.InvokeAsync("");
         await InvokeSearch();
     }
 
     private async Task InvokeSearch()
     {
         await OnSearch.InvokeAsync();
+    }
+
+    private async Task SelectSuggestion(string suggestion)
+    {
+        await ValueChanged.InvokeAsync(suggestion);
+        await OnInputChanged.InvokeAsync(suggestion);
+        await InvokeSearch();
     }
 }
