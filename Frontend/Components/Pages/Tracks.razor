@@ -1,0 +1,262 @@
+@page "/tracks"
+@rendermode InteractiveServer
+@inject TrackApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Track Search</PageTitle>
+
+<div class="artist-search-page">
+
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+        <SearchBar @bind-Value="_nameQuery"
+                   Placeholder="Search by track name..."
+                   OnSearch="RunSearch" />
+
+        <button class="btn btn-outline-success"
+                @onclick="GoToRandomTrackArtist"
+                disabled="@(_results == null || _results.Count == 0)">
+            I'm feeling lucky
+        </button>
+    </div>
+
+    <button class="btn btn-sm btn-outline-dark mb-3" @onclick="ToggleFilters">
+        @(_filtersOpen ? "Hide filters ▲" : "Show filters ▼")
+    </button>
+
+    @if (_filtersOpen)
+    {
+        <div class="filters-panel card p-3 mb-3">
+            <div class="row g-3">
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">BPM from</label>
+                    <input class="form-control" type="number" min="1" max="300" placeholder="e.g. 90"
+                           @bind="_bpmFrom" @bind:event="oninput" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">BPM to</label>
+                    <input class="form-control" type="number" min="1" max="300" placeholder="e.g. 140"
+                           @bind="_bpmTo" @bind:event="oninput" />
+                </div>
+
+                @if (_availableGenres.Count > 0)
+                {
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Genre</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var genre in _availableGenres)
+                            {
+                                var captured = genre;
+                                <Checkbox Id="@($"track-genre-{captured}")"
+                                          Label="@captured"
+                                          Inline="true"
+                                          Checked="_selectedGenres.Contains(captured)"
+                                          CheckedChanged="e => ToggleItem(_selectedGenres, captured, e)" />
+                            }
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-primary" @onclick="RunSearch">Apply filters</button>
+                <button class="btn btn-outline-secondary" @onclick="ClearFilters">Reset filters</button>
+            </div>
+        </div>
+    }
+
+    @if (HasActiveFilters)
+    {
+        <div class="active-filters mb-3 d-flex flex-wrap gap-1 align-items-center">
+            <span class="text-muted me-1">Active:</span>
+
+            @if (!string.IsNullOrWhiteSpace(_nameQuery))
+            {
+                <span class="badge bg-secondary">
+                    Name: @_nameQuery
+                    <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _nameQuery = string.Empty; await RunSearch(); }" />
+                </span>
+            }
+
+            @if (_bpmFrom.HasValue)
+            {
+                <span class="badge bg-secondary">
+                    BPM from: @_bpmFrom
+                    <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _bpmFrom = null; await RunSearch(); }" />
+                </span>
+            }
+
+            @if (_bpmTo.HasValue)
+            {
+                <span class="badge bg-secondary">
+                    BPM to: @_bpmTo
+                    <button class="btn-close btn-close-white btn-sm ms-1" @onclick="async () => { _bpmTo = null; await RunSearch(); }" />
+                </span>
+            }
+
+            @foreach (var genre in _selectedGenres.ToList())
+            {
+                var g = genre;
+                <span class="badge bg-warning text-dark">
+                    @g
+                    <button class="btn-close btn-sm ms-1" @onclick="async () => { _selectedGenres.Remove(g); await RunSearch(); }" />
+                </span>
+            }
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <p class="text-muted">Loading...</p>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+    else if (_results.Count == 0)
+    {
+        <p class="text-muted">No tracks found.</p>
+    }
+    else
+    {
+        <p class="text-muted mb-2">@_results.Count result(s)</p>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Title</th>
+                        <th>Artist</th>
+                        <th>Album</th>
+                        <th>Genre</th>
+                        <th>Language</th>
+                        <th>BPM</th>
+                        <th>Length</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var track in _results)
+                    {
+                        <tr>
+                            <td class="text-break">@track.Title</td>
+                            <td>
+                                <a href="@($"/artists/{track.UserId}")" class="link-primary fw-semibold text-decoration-none">
+                                    @track.ArtistName
+                                </a>
+                            </td>
+                            <td class="text-break">@(track.AlbumTitle ?? "-")</td>
+                            <td class="text-break">@track.Genre</td>
+                            <td class="text-break">@track.Language</td>
+                            <td>@(track.BeatsPerMinute?.ToString() ?? "-")</td>
+                            <td>@(track.Length?.ToString(@"mm\:ss") ?? "-")</td>
+                            <td class="text-break">
+                                @if (!string.IsNullOrWhiteSpace(track.ExternalLink))
+                                {
+                                    <a href="@track.ExternalLink" target="_blank">Open</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+</div>
+
+@code {
+    private string _nameQuery = string.Empty;
+    private int? _bpmFrom;
+    private int? _bpmTo;
+    private bool _filtersOpen;
+    private bool _loading;
+    private string _error = string.Empty;
+
+    private List<string> _availableGenres = [];
+    private HashSet<string> _selectedGenres = [];
+    private List<TrackSearchDto> _results = [];
+
+    private bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(_nameQuery) ||
+        _bpmFrom.HasValue ||
+        _bpmTo.HasValue ||
+        _selectedGenres.Count > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _availableGenres = await Api.GetGenresAsync();
+        await RunSearch();
+    }
+
+    private async Task RunSearch()
+    {
+        _loading = true;
+        _error = string.Empty;
+
+        if (_bpmFrom.HasValue && (_bpmFrom < 1 || _bpmFrom > 300))
+        {
+            _error = "BPM from must be between 1 and 300.";
+            _loading = false;
+            return;
+        }
+
+        if (_bpmTo.HasValue && (_bpmTo < 1 || _bpmTo > 300))
+        {
+            _error = "BPM to must be between 1 and 300.";
+            _loading = false;
+            return;
+        }
+
+        if (_bpmFrom.HasValue && _bpmTo.HasValue && _bpmFrom > _bpmTo)
+        {
+            _error = "BPM from cannot be greater than BPM to.";
+            _loading = false;
+            return;
+        }
+
+        _results = await Api.SearchAsync(
+            _nameQuery,
+            _selectedGenres.Count > 0 ? [.. _selectedGenres] : null,
+            _bpmFrom,
+            _bpmTo);
+
+        _loading = false;
+    }
+
+    private async Task ClearFilters()
+    {
+        _nameQuery = string.Empty;
+        _bpmFrom = null;
+        _bpmTo = null;
+        _selectedGenres.Clear();
+        await RunSearch();
+    }
+
+    private async Task ToggleItem(HashSet<string> set, string value, bool add)
+    {
+        if (add)
+            set.Add(value);
+        else
+            set.Remove(value);
+
+        await RunSearch();
+    }
+
+    private void ToggleFilters()
+    {
+        _filtersOpen = !_filtersOpen;
+    }
+
+    private void GoToRandomTrackArtist()
+    {
+        if (_results == null || _results.Count == 0)
+            return;
+
+        var random = new Random();
+        var track = _results[random.Next(_results.Count)];
+
+        Nav.NavigateTo($"/artists/{track.UserId}");
+    }
+}

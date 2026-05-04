@@ -1,3 +1,5 @@
+namespace Frontend.Models;
+
 public class UserInfo
 {
     public int UserId { get; set; }

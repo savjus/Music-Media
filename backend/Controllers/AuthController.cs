@@ -7,7 +7,13 @@ using System.Security.Claims;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _svc;
-    public AuthController(AuthService svc) => _svc = svc;
+    private readonly UserProfileService _profiles;
+
+    public AuthController(AuthService svc, UserProfileService profiles)
+    {
+        _svc = svc;
+        _profiles = profiles;
+    }
 
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
@@ -31,6 +37,12 @@ public class AuthController : ControllerBase
         if (!_svc.Register(request.Username, request.Email, request.Password))
         {
             return Conflict("Email already in use.");
+        }
+
+        var user = _svc.ValidateLogin(request.Email, request.Password);
+        if (user != null)
+        {
+            _profiles.EnsureProfileExistsForUser(user.Id);
         }
 
         return Ok();

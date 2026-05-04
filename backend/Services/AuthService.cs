@@ -22,6 +22,11 @@ public class AuthService
             u.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
             u.Password == password);
 
+    public UserAccount? GetById(int userId) =>
+        _users.FirstOrDefault(u => u.Id == userId);
+
+    public List<UserAccount> GetAllUsers() => _users.ToList();
+
     public bool Register(string username, string email, string password)
     {
         if (_users.Any(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)))
