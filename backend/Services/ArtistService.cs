@@ -71,4 +71,28 @@ public class ArtistService
     {
         return _data.FirstOrDefault(a => a.Id == id);
     }
+
+    public Artist? FindSimilarArtist(List<int> artistIds)
+    {
+        if (artistIds == null || artistIds.Count == 0)
+            return null;
+
+        var selectedArtists = _data.Where(a => artistIds.Contains(a.Id)).ToList();
+        if (selectedArtists.Count == 0)
+            return null;
+
+        var selectedGenres = selectedArtists.Select(a => a.Genre).Distinct().ToHashSet();
+        
+        var candidates = _data
+            .Where(a => !artistIds.Contains(a.Id))
+            .ToList();
+
+        if (candidates.Count == 0)
+            return null;
+
+        var bestMatch = candidates
+            .MaxBy(a => selectedGenres.Count(g => g == a.Genre));
+
+        return bestMatch;
+    }
 }

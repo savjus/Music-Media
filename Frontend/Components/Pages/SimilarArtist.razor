@@ -1,0 +1,177 @@
+@page "/similar-artist"
+@rendermode InteractiveServer
+@inject ArtistApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Find Similar Artist</PageTitle>
+
+<div class="similar-artist-page">
+    <h1>Find Artist with Similar Genres</h1>
+    <p class="text-muted">Select three artists to find an artist with the most similar genres.</p>
+
+    <div class="card p-4 mb-4">
+        <div class="row g-3">
+            @for (int i = 0; i < 3; i++)
+            {
+                int index = i;
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Artist @(i + 1)</label>
+                    <div class="search-input-wrapper">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Search artist…"
+                               @oninput="e => OnArtistSearchInput(index, (string?)e.Value)"
+                               autocomplete="off" />
+                        @if (_searchResults[index].Count > 0 && !string.IsNullOrEmpty(_searchInputs[index]))
+                        {
+                            <div class="dropdown-menu show" style="display: block; position: absolute; width: 100%; z-index: 1000;">
+                                @foreach (var artist in _searchResults[index].Take(5))
+                                {
+                                    var captured = artist;
+                                    <button type="button"
+                                            class="dropdown-item"
+                                            @onclick="() => SelectArtist(index, captured)">
+                                        @captured.Name (@captured.Genre)
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                    @if (_selectedArtists[index] != null)
+                    {
+                        <div class="mt-2 alert alert-info d-flex justify-content-between align-items-center">
+                            <span>@_selectedArtists[index]!.Name (@_selectedArtists[index]!.Genre)</span>
+                            <button type="button"
+                                    class="btn-close btn-sm"
+                                    @onclick="() => ClearArtist(index)">
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="mt-4">
+            <button class="btn btn-primary"
+                    @onclick="SearchSimilar"
+                    disabled="@(_selectedArtists.Count(a => a != null) != 3 || _isLoading)">
+                @if (_isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <text>Searching</text>
+                }
+                else
+                {
+                    <span>Search</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (_similarArtist != null)
+    {
+        <div class="card p-4">
+            <h3>Result</h3>
+            <div class="alert alert-success">
+                <h5 class="alert-heading">@_similarArtist.Name</h5>
+                <p class="mb-1"><strong>Genre:</strong> @_similarArtist.Genre</p>
+                <p class="mb-1"><strong>Language:</strong> @_similarArtist.Language</p>
+                <p class="mb-1"><strong>Country:</strong> @_similarArtist.Country</p>
+                <p class="mb-0"><strong>Active from:</strong> @_similarArtist.ActiveFrom@if (_similarArtist.ActiveTo.HasValue){ <span>- @_similarArtist.ActiveTo</span> }</p>
+                <hr>
+                <NavLink href="@($"artist-profile/{_similarArtist.Id}")">
+                    <button class="btn btn-success">View Profile</button>
+                </NavLink>
+            </div>
+        </div>
+    }
+    else if (_searchAttempted && _similarArtist == null && !_isLoading)
+    {
+        <div class="alert alert-warning">
+            No similar artist found. Try selecting different artists.
+        </div>
+    }
+</div>
+
+@code {
+    private ArtistDto?[] _selectedArtists = new ArtistDto?[3];
+    private string?[] _searchInputs = new string?[3];
+    private List<ArtistDto>[] _searchResults = new List<ArtistDto>[3] { new(), new(), new() };
+    private ArtistDto? _similarArtist;
+    private bool _isLoading = false;
+    private bool _searchAttempted = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            _selectedArtists[i] = null;
+            _searchInputs[i] = null;
+            _searchResults[i] = new();
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task OnArtistSearchInput(int index, string? searchTerm)
+    {
+        _searchInputs[index] = searchTerm;
+
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            _searchResults[index].Clear();
+            return;
+        }
+
+        try
+        {
+            var results = await Api.SearchAsync(searchTerm, null, null, null, null, false);
+            _searchResults[index] = results;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Search error: {ex.Message}");
+        }
+    }
+
+    private void SelectArtist(int index, ArtistDto artist)
+    {
+        _selectedArtists[index] = artist;
+        _searchInputs[index] = null;
+        _searchResults[index].Clear();
+    }
+
+    private void ClearArtist(int index)
+    {
+        _selectedArtists[index] = null;
+        _searchInputs[index] = null;
+        _searchResults[index].Clear();
+        _similarArtist = null;
+    }
+
+    private async Task SearchSimilar()
+    {
+        if (_selectedArtists.Count(a => a != null) != 3)
+            return;
+
+        _isLoading = true;
+        _searchAttempted = true;
+
+        try
+        {
+            var artistIds = _selectedArtists
+                .Where(a => a != null)
+                .Select(a => a!.Id)
+                .ToList();
+
+            _similarArtist = await Api.FindSimilarArtistAsync(artistIds);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error finding similar artist: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}
