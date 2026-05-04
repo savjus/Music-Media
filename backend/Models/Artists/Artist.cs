@@ -7,4 +7,6 @@ public class Artist
     public int ActiveFrom { get; set; }
     public int? ActiveTo { get; set; }
     public string Country { get; set; } = "";
+
+    public int ProfileViews { get; set; }
 }

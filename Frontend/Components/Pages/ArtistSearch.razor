@@ -23,9 +23,15 @@
         </button>
     </div>
 
-    <button class="btn btn-sm btn-outline-dark mb-3" @onclick="ToggleFilters">
-        @(_filtersOpen ? "Hide filters ▲" : "Show filters ▼")
-    </button>
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+        <button class="btn btn-sm btn-outline-dark" @onclick="ToggleFilters">
+            @(_filtersOpen ? "Hide filters ▲" : "Show filters ▼")
+        </button>
+
+        <button class="btn btn-sm btn-outline-primary" @onclick="TogglePopularitySort">
+            @(_sortByPopularity ? "Default sorting" : "Sort by popularity")
+        </button>
+    </div>
 
     @if (_filtersOpen)
     {
@@ -155,7 +161,7 @@
 
     @if (_loading)
     {
-        <p class="text-muted">Loading…</p>
+        <LoadingSpinner />
     }
     else if (_results.Count == 0)
     {
@@ -207,6 +213,7 @@
 </div>
 
 @code {
+    private bool _sortByPopularity;
     private string _nameQuery = string.Empty;
     private int? _yearFrom;
     private int? _yearTo;
@@ -261,6 +268,8 @@
                 .Take(5)
                 .ToList();
         }
+
+        await Task.CompletedTask;
     }
 
     private async Task RunSearch()
@@ -275,6 +284,8 @@
             _yearTo,
             _onlyActive);
 
+        ApplySorting();
+
         _loading = false;
     }
 
@@ -285,6 +296,7 @@
         _onlyActive = false;
         _selectedGenres.Clear();
         _selectedLanguages.Clear();
+
         await RunSearch();
     }
 
@@ -318,5 +330,21 @@
         var artist = _results[random.Next(_results.Count)];
 
         Nav.NavigateTo($"/artists/{artist.Id}");
+    }
+
+    private void TogglePopularitySort()
+    {
+        _sortByPopularity = !_sortByPopularity;
+        ApplySorting();
+    }
+
+    private void ApplySorting()
+    {
+        if (_sortByPopularity)
+        {
+            _results = _results
+                .OrderByDescending(a => a.ProfileViews)
+                .ToList();
+        }
     }
 }

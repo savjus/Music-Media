@@ -10,7 +10,7 @@
 
 @if (_loading)
 {
-    <p class="text-muted">Loading artist profile...</p>
+    <LoadingSpinner />
 }
 else if (!string.IsNullOrWhiteSpace(_error))
 {

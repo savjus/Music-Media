@@ -67,9 +67,16 @@ public class ArtistService
         return _data.Select(a => a.Language).Distinct().Order().ToList();
     }
 
-    public Artist? GetById(int id) 
+    public Artist? GetById(int id)
     {
-        return _data.FirstOrDefault(a => a.Id == id);
+        var artist = _data.FirstOrDefault(a => a.Id == id);
+
+        if (artist is not null)
+        {
+            artist.ProfileViews++;
+        }
+
+        return artist;
     }
 
     public Artist? FindSimilarArtist(List<int> artistIds)
