@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using Frontend.Models;
 
 namespace Frontend.Services;
@@ -66,5 +67,16 @@ public class ArtistApiService
     public async Task<ArtistDto?> GetByIdAsync(int id)
     {
         return await _http.GetFromJsonAsync<ArtistDto>($"api/artists/{id}");
+    }
+
+    public async Task<ArtistDto?> FindSimilarArtistAsync(List<int> artistIds)
+    {
+        var response = await _http.PostAsJsonAsync("api/artists/find-similar", artistIds);
+        if (!response.IsSuccessStatusCode)
+            return null;
+        
+        var json = await response.Content.ReadAsStringAsync();
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        return JsonSerializer.Deserialize<ArtistDto>(json, options);
     }
 }

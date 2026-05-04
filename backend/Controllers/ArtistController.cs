@@ -30,5 +30,12 @@ public class ArtistsController : ControllerBase
     public IActionResult GetLanguages()
     {
         return Ok(_svc.GetLanguages());
-    } 
+    }
+
+    [HttpPost("find-similar")]
+    public IActionResult FindSimilar([FromBody] List<int> artistIds)
+    {
+        var result = _svc.FindSimilarArtist(artistIds);
+        return result is null ? NotFound() : Ok(result);
+    }
 }

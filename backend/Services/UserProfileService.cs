@@ -462,10 +462,16 @@ public class UserProfileService
         return true;
     }
 
-    public bool DeleteComment(int commentId, int currentUserId)
+    public bool DeleteComment(int commentId, int currentUserId, bool isAdmin = false)
     {
         var comment = _comments.FirstOrDefault(c => c.Id == commentId);
-        if (comment == null || comment.ProfileUserId != currentUserId)
+        if (comment == null)
+        {
+            return false;
+        }
+
+        // Allow deletion if user is the profile owner or if user is admin
+        if (comment.ProfileUserId != currentUserId && !isAdmin)
         {
             return false;
         }
