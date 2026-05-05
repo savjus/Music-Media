@@ -5,6 +5,7 @@
 @inject Frontend.Services.ProfileApiService ProfileApi
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject Frontend.Services.AuthService Auth
 
 <h3>Artist profile</h3>
 
@@ -28,6 +29,14 @@ else
         <button class="btn btn-outline-secondary btn-sm" @onclick="GoBackToSearch">
             Back to artists
         </button>
+
+        @if (Auth.IsLoggedIn)
+        {
+            <button class="btn btn-sm @(isFavorite ? "btn-danger" : "btn-outline-primary")"
+                    @onclick="ToggleFavorite">
+                @(isFavorite ? "Remove from favorites" : "Add to favorites")
+            </button>
+        }
 
         <button class="btn btn-outline-secondary btn-sm" @onclick="CopyArtistLink">
             @(copied ? "Copied!" : "Share")
@@ -236,11 +245,12 @@ else
                 }
             </div>
             break;
+
         case "comments":
             <CommentsSection ProfileUserId="@Id"
-                            Comments="@_comments"
-                            OnCommentAdded="@HandleCommentAdded"
-                            OnCommentDeleted="@HandleCommentDeleted" />
+                             Comments="@_comments"
+                             OnCommentAdded="@HandleCommentAdded"
+                             OnCommentDeleted="@HandleCommentDeleted" />
             break;
 
         default:
@@ -267,6 +277,7 @@ else
     private List<TourDto> _tours = new();
     private List<CommentDto> _comments = new();
     private bool copied = false;
+    private bool isFavorite = false;
 
     private string DisplayName =>
         !string.IsNullOrWhiteSpace(_profile?.Profile?.DisplayName)
@@ -300,6 +311,7 @@ else
         _loading = true;
         _error = null;
         _activeTab = "overview";
+        isFavorite = false;
 
         try
         {
@@ -316,6 +328,12 @@ else
             }
 
             _profile = await ProfileApi.GetProfileByUserIdAsync(Id);
+
+            if (Auth.IsLoggedIn)
+            {
+                isFavorite = await ProfileApi.IsFavoriteArtistAsync(Id);
+            }
+
             if (_profile != null)
             {
                 _albums = _profile.Albums ?? new();
@@ -340,6 +358,7 @@ else
             _tracks = new();
             _tours = new();
             _comments = new();
+            isFavorite = false;
         }
         finally
         {
@@ -353,16 +372,41 @@ else
         Nav.NavigateTo("/artists");
     }
 
+    private async Task ToggleFavorite()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            return;
+        }
+
+        if (isFavorite)
+        {
+            var success = await ProfileApi.RemoveFavoriteArtistAsync(Id);
+
+            if (success)
+            {
+                isFavorite = false;
+            }
+        }
+        else
+        {
+            var success = await ProfileApi.AddFavoriteArtistAsync(Id);
+
+            if (success)
+            {
+                isFavorite = true;
+            }
+        }
+    }
+
     private Task HandleCommentAdded(CommentDto comment)
     {
-        // Comments list is already updated by the CommentsSection component
         StateHasChanged();
         return Task.CompletedTask;
     }
 
     private Task HandleCommentDeleted(int commentId)
     {
-        // Comments list is already updated by the CommentsSection component
         StateHasChanged();
         return Task.CompletedTask;
     }

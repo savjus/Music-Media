@@ -6,6 +6,7 @@
 @inject Frontend.Services.ProfileApiService ProfileApi
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject ArtistApiService ArtistApi
 
 <h3>Your profile</h3>
 
@@ -86,6 +87,9 @@ else if (profile is not null)
         <li class="nav-item">
             <button class="nav-link @(activeTab == "comments" ? "active" : "")" @onclick="@(() => activeTab = "comments")">Comments</button>
         </li>
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "favorites" ? "active" : "")" @onclick="@(() => activeTab = "favorites")">Favorites</button>
+        </li>
     </ul>
 
     @switch (activeTab)
@@ -93,18 +97,68 @@ else if (profile is not null)
         case "albums":
             <AlbumsSection Albums="@albums" />
             break;
+
         case "tracks":
             <TracksSection Tracks="@tracks" Albums="@albums" />
             break;
+
         case "tours":
             <ToursSection Tours="@tours" />
             break;
+
         case "comments":
             <CommentsSection ProfileUserId="@(profile?.Profile?.UserId ?? 0)"
-                            Comments="@comments"
-                            OnCommentAdded="@HandleCommentAdded"
-                            OnCommentDeleted="@HandleCommentDeleted" />
+                             Comments="@comments"
+                             OnCommentAdded="@HandleCommentAdded"
+                             OnCommentDeleted="@HandleCommentDeleted" />
             break;
+
+        case "favorites":
+            <div>
+                <h5 class="mb-3">Favorite artists</h5>
+
+                @if (favoriteArtists.Count == 0)
+                {
+                    <p class="text-muted">No favorite artists yet.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Genre</th>
+                                    <th>Country</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var artist in favoriteArtists)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="@($"/artists/{artist.Id}")" class="link-primary fw-semibold text-decoration-none">
+                                                @artist.Name
+                                            </a>
+                                        </td>
+                                        <td>@artist.Genre</td>
+                                        <td>@artist.Country</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    @onclick="async () => await RemoveFavoriteFromProfile(artist.Id)">
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            break;
+
         default:
             <OverviewSection Albums="@albums" Tracks="@tracks" Tours="@tours" />
             break;
@@ -118,10 +172,12 @@ else if (profile is not null)
     private string? loadError;
     private bool isLoaded;
     private string activeTab = "overview";
+
     private List<AlbumDto> albums = new();
     private List<TrackDto> tracks = new();
     private List<TourDto> tours = new();
     private List<CommentDto> comments = new();
+    private List<ArtistDto> favoriteArtists = new();
 
     protected override void OnInitialized()
     {
@@ -151,17 +207,23 @@ else if (profile is not null)
 
     private async Task HandleSave()
     {
-        editableProfile.Genres = genresInput.Split(',').Select(s => s.Trim()).ToList();
+        editableProfile.Genres = genresInput
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .ToList();
+
         var success = await ProfileApi.UpdateMyProfileAsync(editableProfile);
+
         if (success)
         {
-            profile.Profile = editableProfile;
+            profile!.Profile = editableProfile;
             await ProfileApi.SwitchEditing();
         }
         else
         {
             loadError = "Failed to save profile.";
         }
+
         StateHasChanged();
     }
 
@@ -171,6 +233,7 @@ else if (profile is not null)
         {
             editableProfile = new UserProfileDto
             {
+                UserId = profile.Profile.UserId,
                 DisplayName = profile.Profile.DisplayName,
                 DefaultLanguage = profile.Profile.DefaultLanguage,
                 Bio = profile.Profile.Bio,
@@ -178,8 +241,10 @@ else if (profile is not null)
                 SpotifyUrl = profile.Profile.SpotifyUrl,
                 YouTubeUrl = profile.Profile.YouTubeUrl
             };
+
             genresInput = string.Join(", ", editableProfile.Genres ?? new List<string>());
         }
+
         ProfileApi.SwitchEditing();
         StateHasChanged();
     }
@@ -204,9 +269,10 @@ else if (profile is not null)
                 }
             }
 
-            try 
+            try
             {
                 profile = await ProfileApi.GetMyProfileAsync();
+
                 if (profile is null)
                 {
                     loadError = "Could not load your profile.";
@@ -217,11 +283,14 @@ else if (profile is not null)
                     tracks = profile.Tracks ?? new();
                     tours = profile.Tours ?? new();
                     comments = profile.Comments ?? new();
-                    
+
+                    await LoadFavoriteArtists();
+
                     if (profile.Profile is not null)
                     {
                         editableProfile = new UserProfileDto
                         {
+                            UserId = profile.Profile.UserId,
                             DisplayName = profile.Profile.DisplayName,
                             DefaultLanguage = profile.Profile.DefaultLanguage,
                             Bio = profile.Profile.Bio,
@@ -229,6 +298,7 @@ else if (profile is not null)
                             SpotifyUrl = profile.Profile.SpotifyUrl,
                             YouTubeUrl = profile.Profile.YouTubeUrl
                         };
+
                         genresInput = string.Join(", ", editableProfile.Genres ?? new List<string>());
                     }
                 }
@@ -237,7 +307,7 @@ else if (profile is not null)
             {
                 loadError = "Failed to reach profile API.";
             }
-            finally 
+            finally
             {
                 isLoaded = true;
                 StateHasChanged();
@@ -245,16 +315,38 @@ else if (profile is not null)
         }
     }
 
+    private async Task LoadFavoriteArtists()
+    {
+        var favoriteIds = await ProfileApi.GetFavoriteArtistIdsAsync();
+        var allArtists = await ArtistApi.SearchAsync(null, null, null, null, null, false);
+
+        favoriteArtists = allArtists
+            .Where(a => favoriteIds.Contains(a.Id))
+            .ToList();
+    }
+
+    private async Task RemoveFavoriteFromProfile(int artistId)
+    {
+        var success = await ProfileApi.RemoveFavoriteArtistAsync(artistId);
+
+        if (success)
+        {
+            favoriteArtists = favoriteArtists
+                .Where(a => a.Id != artistId)
+                .ToList();
+
+            StateHasChanged();
+        }
+    }
+
     private Task HandleCommentAdded(CommentDto comment)
     {
-        // Comments list is already updated by the CommentsSection component
         StateHasChanged();
         return Task.CompletedTask;
     }
 
     private Task HandleCommentDeleted(int commentId)
     {
-        // Comments list is already updated by the CommentsSection component
         StateHasChanged();
         return Task.CompletedTask;
     }

@@ -26,6 +26,21 @@ public class ProfileController : ControllerBase
         public List<Comment> Comments { get; set; } = new();
     }
 
+    private int? GetCurrentUserId()
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == JwtRegisteredClaimNames.Sub ||
+            c.Type == "sub" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return null;
+        }
+
+        return userId;
+    }
+
     [AllowAnonymous]
     [HttpGet("{userId:int}")]
     public IActionResult GetByUserId(int userId)
@@ -48,17 +63,14 @@ public class ProfileController : ControllerBase
     [HttpGet("me")]
     public IActionResult GetMe()
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        var profile = _profiles.GetProfile(userId);
+        var profile = _profiles.GetProfile(userId.Value);
         if (profile == null)
         {
             return NotFound();
@@ -67,10 +79,10 @@ public class ProfileController : ControllerBase
         var response = new ProfileResponse
         {
             Profile = profile,
-            Albums = _profiles.GetAlbumsForUser(userId),
-            Tracks = _profiles.GetTracksForUser(userId),
-            Tours = _profiles.GetToursForUser(userId),
-            Comments = _profiles.GetCommentsForProfile(userId)
+            Albums = _profiles.GetAlbumsForUser(userId.Value),
+            Tracks = _profiles.GetTracksForUser(userId.Value),
+            Tours = _profiles.GetToursForUser(userId.Value),
+            Comments = _profiles.GetCommentsForProfile(userId.Value)
         };
 
         return Ok(response);
@@ -79,17 +91,14 @@ public class ProfileController : ControllerBase
     [HttpPut("me")]
     public IActionResult UpdateMe([FromBody] UserProfile updatedProfile)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        updatedProfile.UserId = userId;
+        updatedProfile.UserId = userId.Value;
         var success = _profiles.UpdateProfile(updatedProfile);
 
         if (!success)
@@ -103,17 +112,14 @@ public class ProfileController : ControllerBase
     [HttpPost("me/tracks")]
     public IActionResult AddTrack([FromBody] Track track)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        track.UserId = userId;
+        track.UserId = userId.Value;
 
         var success = _profiles.AddTrack(track);
 
@@ -128,17 +134,14 @@ public class ProfileController : ControllerBase
     [HttpPost("me/albums")]
     public IActionResult AddAlbum([FromBody] Album album)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        album.UserId = userId;
+        album.UserId = userId.Value;
 
         var success = _profiles.AddAlbum(album);
 
@@ -153,17 +156,14 @@ public class ProfileController : ControllerBase
     [HttpPost("me/tours")]
     public IActionResult AddTour([FromBody] Tour tour)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        tour.UserId = userId;
+        tour.UserId = userId.Value;
 
         var success = _profiles.AddTour(tour);
 
@@ -173,6 +173,60 @@ public class ProfileController : ControllerBase
         }
 
         return Ok(tour);
+    }
+
+    [HttpGet("favorites")]
+    public IActionResult GetFavorites()
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        return Ok(_profiles.GetFavoriteArtistIds(userId.Value));
+    }
+
+    [HttpGet("favorites/{artistId:int}")]
+    public IActionResult IsFavorite(int artistId)
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        return Ok(_profiles.IsFavoriteArtist(userId.Value, artistId));
+    }
+
+    [HttpPost("favorites/{artistId:int}")]
+    public IActionResult AddFavorite(int artistId)
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        _profiles.AddFavoriteArtist(userId.Value, artistId);
+        return Ok();
+    }
+
+    [HttpDelete("favorites/{artistId:int}")]
+    public IActionResult RemoveFavorite(int artistId)
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        _profiles.RemoveFavoriteArtist(userId.Value, artistId);
+        return Ok();
     }
 
     [AllowAnonymous]
@@ -186,23 +240,18 @@ public class ProfileController : ControllerBase
     [HttpPost("{userId:int}/comments")]
     public IActionResult AddComment(int userId, [FromBody] CreateCommentRequest request)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var currentUserId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var currentUserId))
+        if (currentUserId == null)
         {
             return Unauthorized("Invalid or missing authentication token.");
         }
 
-        // Validate comment content
         if (request == null || string.IsNullOrWhiteSpace(request.Content))
         {
             return BadRequest("Comment content cannot be empty.");
         }
 
-        // Check for profanity
         if (ProfanityFilter.ContainsProfanity(request.Content))
         {
             return BadRequest(ProfanityFilter.GetProfanityErrorMessage());
@@ -211,12 +260,11 @@ public class ProfileController : ControllerBase
         var comment = new Comment
         {
             ProfileUserId = userId,
-            AuthorUserId = currentUserId,
+            AuthorUserId = currentUserId.Value,
             Content = request.Content.Trim()
         };
 
-        // Set author name from current user's profile
-        var authorProfile = _profiles.GetProfile(currentUserId);
+        var authorProfile = _profiles.GetProfile(currentUserId.Value);
         comment.AuthorName = authorProfile?.DisplayName ?? "Anonymous";
 
         var success = _profiles.AddComment(comment);
@@ -237,20 +285,17 @@ public class ProfileController : ControllerBase
     [HttpDelete("comments/{commentId:int}")]
     public IActionResult DeleteComment(int commentId)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        var user = _authService.GetById(userId);
+        var user = _authService.GetById(userId.Value);
         bool isAdmin = user?.IsAdmin ?? false;
 
-        var success = _profiles.DeleteComment(commentId, userId, isAdmin);
+        var success = _profiles.DeleteComment(commentId, userId.Value, isAdmin);
 
         if (!success)
         {
@@ -263,17 +308,14 @@ public class ProfileController : ControllerBase
     [HttpPost("comments/{commentId:int}/like")]
     public IActionResult LikeComment(int commentId)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        var success = _profiles.LikeComment(commentId, userId);
+        var success = _profiles.LikeComment(commentId, userId.Value);
 
         if (!success)
         {
@@ -286,17 +328,14 @@ public class ProfileController : ControllerBase
     [HttpPost("comments/{commentId:int}/dislike")]
     public IActionResult DislikeComment(int commentId)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c =>
-            c.Type == JwtRegisteredClaimNames.Sub ||
-            c.Type == "sub" ||
-            c.Type == ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        if (userId == null)
         {
             return Unauthorized();
         }
 
-        var success = _profiles.DislikeComment(commentId, userId);
+        var success = _profiles.DislikeComment(commentId, userId.Value);
 
         if (!success)
         {

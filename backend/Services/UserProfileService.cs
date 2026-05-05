@@ -1,6 +1,7 @@
 public class UserProfileService
 {
     private readonly AuthService _authService;
+    private readonly Dictionary<int, HashSet<int>> _favoriteArtists = new();
     private readonly List<UserProfile> _profiles = new();
     private readonly List<Album> _albums = new();
     private readonly List<Track> _tracks = new();
@@ -891,6 +892,39 @@ public class UserProfileService
                 return vote;
         }
         return null;
+    }
+    public void AddFavoriteArtist(int userId, int artistId)
+    {
+        if (!_favoriteArtists.ContainsKey(userId))
+        {
+            _favoriteArtists[userId] = new HashSet<int>();
+        }
+
+        _favoriteArtists[userId].Add(artistId);
+    }
+
+    public void RemoveFavoriteArtist(int userId, int artistId)
+    {
+        if (_favoriteArtists.ContainsKey(userId))
+        {
+            _favoriteArtists[userId].Remove(artistId);
+        }
+    }
+
+    public bool IsFavoriteArtist(int userId, int artistId)
+    {
+        return _favoriteArtists.ContainsKey(userId) &&
+               _favoriteArtists[userId].Contains(artistId);
+    }
+
+    public List<int> GetFavoriteArtistIds(int userId)
+    {
+        if (!_favoriteArtists.ContainsKey(userId))
+        {
+            return new List<int>();
+        }
+
+        return _favoriteArtists[userId].ToList();
     }
 }
 
