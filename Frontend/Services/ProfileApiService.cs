@@ -278,5 +278,67 @@ public class ProfileApiService
         var response = await client.PostAsJsonAsync($"api/profile/comments/{commentId}/dislike", new { });
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<List<int>> GetFavoriteArtistIdsAsync()
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var result = await client.GetFromJsonAsync<List<int>>("api/profile/favorites");
+        return result ?? new List<int>();
+    }
+
+    public async Task<bool> IsFavoriteArtistAsync(int artistId)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.GetAsync($"api/profile/favorites/{artistId}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return false;
+        }
+
+        return await response.Content.ReadFromJsonAsync<bool>();
+    }
+
+    public async Task<bool> AddFavoriteArtistAsync(int artistId)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.PostAsync($"api/profile/favorites/{artistId}", null);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> RemoveFavoriteArtistAsync(int artistId)
+    {
+        var client = _factory.CreateClient("auth");
+
+        if (!string.IsNullOrEmpty(_auth.Token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _auth.Token);
+        }
+
+        var response = await client.DeleteAsync($"api/profile/favorites/{artistId}");
+        return response.IsSuccessStatusCode;
+    }
 }
 

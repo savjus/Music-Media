@@ -1,3 +1,4 @@
+@page "/"
 @page "/artists"
 @rendermode InteractiveServer
 @inject ArtistApiService Api
@@ -22,15 +23,20 @@
         </button>
     </div>
 
-    <button class="btn btn-sm btn-outline-dark mb-3" @onclick="ToggleFilters">
-        @(_filtersOpen ? "Hide filters ▲" : "Show filters ▼")
-    </button>
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+        <button class="btn btn-sm btn-outline-dark" @onclick="ToggleFilters">
+            @(_filtersOpen ? "Hide filters ▲" : "Show filters ▼")
+        </button>
+
+        <button class="btn btn-sm btn-outline-primary" @onclick="TogglePopularitySort">
+            @(_sortByPopularity ? "Default sorting" : "Sort by popularity")
+        </button>
+    </div>
 
     @if (_filtersOpen)
     {
         <div class="filters-panel card p-3 mb-3">
             <div class="row g-3">
-
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Active from</label>
                     <input class="form-control" type="number" placeholder="e.g. 1990"
@@ -85,7 +91,6 @@
                         </div>
                     </div>
                 }
-
             </div>
 
             <div class="mt-3 d-flex gap-2">
@@ -154,7 +159,7 @@
 
     @if (_loading)
     {
-        <p class="text-muted">Loading…</p>
+        <LoadingSpinner />
     }
     else if (_results.Count == 0)
     {
@@ -162,7 +167,12 @@
     }
     else
     {
-        <p class="text-muted mb-2">@_results.Count result(s)</p>
+        <p class="text-muted mb-2">
+            @_results.Count result(s) — page @_currentPage of @TotalPages
+        </p>
+
+        @PaginationControls
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-dark">
@@ -175,7 +185,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var artist in _results)
+                    @foreach (var artist in PagedResults)
                     {
                         <tr>
                             <td>
@@ -201,17 +211,23 @@
                 </tbody>
             </table>
         </div>
+
+        @PaginationControls
     }
 
 </div>
 
 @code {
+    private bool _sortByPopularity;
     private string _nameQuery = string.Empty;
     private int? _yearFrom;
     private int? _yearTo;
     private bool _onlyActive;
     private bool _filtersOpen;
     private bool _loading;
+
+    private const int PageSize = 20;
+    private int _currentPage = 1;
 
     private List<string> _availableGenres = [];
     private List<string> _availableLanguages = [];
@@ -220,6 +236,14 @@
     private List<ArtistDto> _results = [];
     private List<ArtistDto> _allArtists = [];
     private List<string> _autocompleteSuggestions = [];
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(_results.Count / (double)PageSize));
+
+    private List<ArtistDto> PagedResults =>
+        _results
+            .Skip((_currentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
 
     private bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_nameQuery) ||
@@ -260,6 +284,8 @@
                 .Take(5)
                 .ToList();
         }
+
+        await Task.CompletedTask;
     }
 
     private async Task RunSearch()
@@ -274,6 +300,9 @@
             _yearTo,
             _onlyActive);
 
+        ApplySorting();
+        _currentPage = 1;
+
         _loading = false;
     }
 
@@ -284,6 +313,8 @@
         _onlyActive = false;
         _selectedGenres.Clear();
         _selectedLanguages.Clear();
+        _currentPage = 1;
+
         await RunSearch();
     }
 
@@ -318,4 +349,57 @@
 
         Nav.NavigateTo($"/artists/{artist.Id}");
     }
+
+    private void TogglePopularitySort()
+    {
+        _sortByPopularity = !_sortByPopularity;
+        ApplySorting();
+        _currentPage = 1;
+    }
+
+    private void ApplySorting()
+    {
+        if (_sortByPopularity)
+        {
+            _results = _results
+                .OrderByDescending(a => a.ProfileViews)
+                .ToList();
+        }
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page < 1 || page > TotalPages)
+            return;
+
+        _currentPage = page;
+    }
+
+    private RenderFragment PaginationControls => @<div>
+        @if (TotalPages > 1)
+        {
+            <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 my-3">
+                <button class="btn btn-outline-secondary btn-sm"
+                        disabled="@(_currentPage == 1)"
+                        @onclick="() => GoToPage(_currentPage - 1)">
+                    Previous
+                </button>
+
+                @for (var i = 1; i <= TotalPages; i++)
+                {
+                    var pageNr = i;
+                    <button class="btn btn-sm @(pageNr == _currentPage ? "btn-primary" : "btn-outline-primary")"
+                            @onclick="() => GoToPage(pageNr)">
+                        @pageNr
+                    </button>
+                }
+
+                <button class="btn btn-outline-secondary btn-sm"
+                        disabled="@(_currentPage == TotalPages)"
+                        @onclick="() => GoToPage(_currentPage + 1)">
+                    Next
+                </button>
+            </div>
+        }
+    </div>;
 }
