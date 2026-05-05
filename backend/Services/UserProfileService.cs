@@ -45,9 +45,24 @@ public class UserProfileService
                 Genres = new List<string> { "Pop" },
                 SpotifyUrl = "https://open.spotify.com/",
                 YouTubeUrl = "https://www.youtube.com/"
+            },
+            new UserProfile { UserId = 104, DisplayName = "The Beatles", Bio = "British rock band.", DefaultLanguage = "English", Genres = new List<string> { "Rock" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 105, DisplayName = "Radiohead", Bio = "English alternative rock band.", DefaultLanguage = "English", Genres = new List<string> { "Alternative" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 106, DisplayName = "Björk", Bio = "Icelandic singer and songwriter.", DefaultLanguage = "English", Genres = new List<string> { "Electronic" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 107, DisplayName = "Coldplay", Bio = "British pop rock band.", DefaultLanguage = "English", Genres = new List<string> { "Pop" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 108, DisplayName = "Stromae", Bio = "Belgian electronic music artist.", DefaultLanguage = "French", Genres = new List<string> { "Electronic" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 109, DisplayName = "Rammstein", Bio = "German industrial metal band.", DefaultLanguage = "German", Genres = new List<string> { "Metal" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 110, DisplayName = "Daft Punk", Bio = "French electronic music duo.", DefaultLanguage = "English", Genres = new List<string> { "Electronic" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 111, DisplayName = "Beyoncé", Bio = "American R&B and pop artist.", DefaultLanguage = "English", Genres = new List<string> { "R&B" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 112, DisplayName = "Kendrick Lamar", Bio = "American hip-hop artist.", DefaultLanguage = "English", Genres = new List<string> { "Hip-Hop" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 113, DisplayName = "G&G Sindikatas", Bio = "Lithuanian hip-hop group.", DefaultLanguage = "Lithuanian", Genres = new List<string> { "Hip-Hop" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 114, DisplayName = "Sigur Rós", Bio = "Icelandic post-rock band.", DefaultLanguage = "Icelandic", Genres = new List<string> { "Post-Rock" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 115, DisplayName = "Seu Jorge", Bio = "Brazilian musician and actor.", DefaultLanguage = "Portuguese", Genres = new List<string> { "MPB" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 116, DisplayName = "Adele", Bio = "British pop and soul singer.", DefaultLanguage = "English", Genres = new List<string> { "Pop" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 117, DisplayName = "Taylor Swift", Bio = "American pop artist and songwriter.", DefaultLanguage = "English", Genres = new List<string> { "Pop" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" },
+            new UserProfile { UserId = 118, DisplayName = "Metallica", Bio = "American metal band.", DefaultLanguage = "English", Genres = new List<string> { "Metal" }, SpotifyUrl = "https://open.spotify.com/", YouTubeUrl = "https://www.youtube.com/" }
             }
-        }
-        );
+            );
 
         _albums.AddRange(new[]
         {
@@ -110,11 +125,161 @@ public class UserProfileService
                 Genre = "Indie",
                 Description = "A textured indie-folk record with intimate vocals.",
                 ExternalLink = "https://example.com/northern-pines"
+            },
+            new Album
+            {
+                Id = 7,
+                UserId = 104,
+                Title = "Hey Jude",
+                Year = 1970,
+                Genre = "Rock",
+                Description = "Compilation album featuring several of The Beatles' best-known songs.",
+                ExternalLink = "https://example.com/hey-jude-album"
+            },
+            new Album
+            {
+                Id = 8,
+                UserId = 105,
+                Title = "Pablo Honey",
+                Year = 1993,
+                Genre = "Alternative",
+                Description = "Radiohead's debut studio album.",
+                ExternalLink = "https://example.com/pablo-honey"
+            },
+            new Album
+            {
+                Id = 9,
+                UserId = 106,
+                Title = "Post",
+                Year = 1995,
+                Genre = "Electronic",
+                Description = "An eclectic album mixing electronic, pop and experimental sounds.",
+                ExternalLink = "https://example.com/post"
+            },
+            new Album
+            {
+                Id = 10,
+                UserId = 107,
+                Title = "Parachutes",
+                Year = 2000,
+                Genre = "Pop",
+                Description = "Coldplay's debut studio album.",
+                ExternalLink = "https://example.com/parachutes"
+            },
+            new Album
+            {
+                Id = 11,
+                UserId = 108,
+                Title = "Cheese",
+                Year = 2010,
+                Genre = "Electronic",
+                Description = "Stromae's debut album including dance-pop and electronic influences.",
+                ExternalLink = "https://example.com/cheese"
+            },
+            new Album
+            {
+                Id = 12,
+                UserId = 109,
+                Title = "Sehnsucht",
+                Year = 1997,
+                Genre = "Metal",
+                Description = "Industrial metal album by Rammstein.",
+                ExternalLink = "https://example.com/sehnsucht"
+            },
+            new Album
+            {
+                Id = 13,
+                UserId = 110,
+                Title = "Discovery",
+                Year = 2001,
+                Genre = "Electronic",
+                Description = "Electronic album by Daft Punk featuring house, disco and synth-pop sounds.",
+                ExternalLink = "https://example.com/discovery"
+            },
+            new Album
+            {
+                Id = 14,
+                UserId = 111,
+                Title = "I Am... Sasha Fierce",
+                Year = 2008,
+                Genre = "R&B",
+                Description = "Beyoncé album featuring pop and R&B ballads.",
+                ExternalLink = "https://example.com/i-am-sasha-fierce"
+            },
+            new Album
+            {
+                Id = 15,
+                UserId = 112,
+                Title = "DAMN.",
+                Year = 2017,
+                Genre = "Hip-Hop",
+                Description = "Kendrick Lamar album blending hip-hop, spoken word and political themes.",
+                ExternalLink = "https://example.com/damn"
+            },
+            new Album
+            {
+                Id = 16,
+                UserId = 113,
+                Title = "Tiems, kurie nieko nebijo",
+                Year = 2001,
+                Genre = "Hip-Hop",
+                Description = "Lithuanian hip-hop album by G&G Sindikatas.",
+                ExternalLink = "https://example.com/tiems-kurie-nieko-nebijo"
+            },
+            new Album
+            {
+                Id = 17,
+                UserId = 114,
+                Title = "Takk...",
+                Year = 2005,
+                Genre = "Post-Rock",
+                Description = "Post-rock album by Sigur Rós.",
+                ExternalLink = "https://example.com/takk"
+            },
+            new Album
+            {
+                Id = 18,
+                UserId = 115,
+                Title = "The Life Aquatic Studio Sessions",
+                Year = 2005,
+                Genre = "MPB",
+                Description = "Seu Jorge album featuring Portuguese interpretations of classic songs.",
+                ExternalLink = "https://example.com/life-aquatic"
+            },
+            new Album
+            {
+                Id = 19,
+                UserId = 116,
+                Title = "21",
+                Year = 2011,
+                Genre = "Pop",
+                Description = "Adele album featuring soul and pop ballads.",
+                ExternalLink = "https://example.com/21"
+            },
+            new Album
+            {
+                Id = 20,
+                UserId = 117,
+                Title = "1989",
+                Year = 2014,
+                Genre = "Pop",
+                Description = "Taylor Swift pop album with synth-pop production.",
+                ExternalLink = "https://example.com/1989"
+            },
+            new Album
+            {
+                Id = 21,
+                UserId = 118,
+                Title = "Metallica",
+                Year = 1991,
+                Genre = "Metal",
+                Description = "Also known as The Black Album.",
+                ExternalLink = "https://example.com/metallica"
             }
         });
 
-        _tracks.AddRange(new[]
-        {
+                _tracks.AddRange(new[]
+                {
             new Track
             {
                 Id = 1,
@@ -210,6 +375,186 @@ public class UserProfileService
                 BeatsPerMinute = 102,
                 Length = TimeSpan.FromMinutes(4.0),
                 ExternalLink = "https://example.com/amber-wind"
+            },
+            new Track
+            {
+                Id = 9,
+                UserId = 104,
+                AlbumId = 7,
+                Title = "Hey Jude",
+                Genre = "Rock",
+                Language = "English",
+                BeatsPerMinute = 74,
+                Length = TimeSpan.FromMinutes(7.1),
+                ExternalLink = "https://example.com/hey-jude"
+            },
+            new Track
+            {
+                Id = 10,
+                UserId = 105,
+                AlbumId = 8,
+                Title = "Creep",
+                Genre = "Alternative",
+                Language = "English",
+                BeatsPerMinute = 92,
+                Length = TimeSpan.FromMinutes(3.9),
+                ExternalLink = "https://example.com/creep"
+            },
+            new Track
+            {
+                Id = 11,
+                UserId = 106,
+                AlbumId = 9,
+                Title = "Army of Me",
+                Genre = "Electronic",
+                Language = "English",
+                BeatsPerMinute = 87,
+                Length = TimeSpan.FromMinutes(3.9),
+                ExternalLink = "https://example.com/army-of-me"
+            },
+            new Track
+            {
+                Id = 12,
+                UserId = 107,
+                AlbumId = 10,
+                Title = "Yellow",
+                Genre = "Pop",
+                Language = "English",
+                BeatsPerMinute = 88,
+                Length = TimeSpan.FromMinutes(4.4),
+                ExternalLink = "https://example.com/yellow"
+            },
+            new Track
+            {
+                Id = 13,
+                UserId = 108,
+                AlbumId = 11,
+                Title = "Alors on danse",
+                Genre = "Electronic",
+                Language = "French",
+                BeatsPerMinute = 120,
+                Length = TimeSpan.FromMinutes(3.4),
+                ExternalLink = "https://example.com/alors-on-danse"
+            },
+            new Track
+            {
+                Id = 14,
+                UserId = 109,
+                AlbumId = 12,
+                Title = "Du Hast",
+                Genre = "Metal",
+                Language = "German",
+                BeatsPerMinute = 125,
+                Length = TimeSpan.FromMinutes(3.9),
+                ExternalLink = "https://example.com/du-hast"
+            },
+            new Track
+            {
+                Id = 15,
+                UserId = 110,
+                AlbumId = 13,
+                Title = "One More Time",
+                Genre = "Electronic",
+                Language = "English",
+                BeatsPerMinute = 123,
+                Length = TimeSpan.FromMinutes(5.3),
+                ExternalLink = "https://example.com/one-more-time"
+            },
+            new Track
+            {
+                Id = 16,
+                UserId = 111,
+                AlbumId = 14,
+                Title = "Halo",
+                Genre = "R&B",
+                Language = "English",
+                BeatsPerMinute = 80,
+                Length = TimeSpan.FromMinutes(4.3),
+                ExternalLink = "https://example.com/halo"
+            },
+            new Track
+            {
+                Id = 17,
+                UserId = 112,
+                AlbumId = 15,
+                Title = "HUMBLE.",
+                Genre = "Hip-Hop",
+                Language = "English",
+                BeatsPerMinute = 150,
+                Length = TimeSpan.FromMinutes(2.9),
+                ExternalLink = "https://example.com/humble"
+            },
+            new Track
+            {
+                Id = 18,
+                UserId = 113,
+                AlbumId = 16,
+                Title = "Tomas",
+                Genre = "Hip-Hop",
+                Language = "Lithuanian",
+                BeatsPerMinute = 96,
+                Length = TimeSpan.FromMinutes(3.7),
+                ExternalLink = "https://example.com/tomas"
+            },
+            new Track
+            {
+                Id = 19,
+                UserId = 114,
+                AlbumId = 17,
+                Title = "Hoppípolla",
+                Genre = "Post-Rock",
+                Language = "Icelandic",
+                BeatsPerMinute = 82,
+                Length = TimeSpan.FromMinutes(4.5),
+                ExternalLink = "https://example.com/hoppipolla"
+            },
+            new Track
+            {
+                Id = 20,
+                UserId = 115,
+                AlbumId = 18,
+                Title = "Life on Mars?",
+                Genre = "MPB",
+                Language = "Portuguese",
+                BeatsPerMinute = 104,
+                Length = TimeSpan.FromMinutes(3.6),
+                ExternalLink = "https://example.com/life-on-mars"
+            },
+            new Track
+            {
+                Id = 21,
+                UserId = 116,
+                AlbumId = 19,
+                Title = "Rolling in the Deep",
+                Genre = "Pop",
+                Language = "English",
+                BeatsPerMinute = 105,
+                Length = TimeSpan.FromMinutes(3.8),
+                ExternalLink = "https://example.com/rolling-in-the-deep"
+            },
+            new Track
+            {
+                Id = 22,
+                UserId = 117,
+                AlbumId = 20,
+                Title = "Blank Space",
+                Genre = "Pop",
+                Language = "English",
+                BeatsPerMinute = 96,
+                Length = TimeSpan.FromMinutes(3.9),
+                ExternalLink = "https://example.com/blank-space"
+            },
+            new Track
+            {
+                Id = 23,
+                UserId = 118,
+                AlbumId = 21,
+                Title = "Enter Sandman",
+                Genre = "Metal",
+                Language = "English",
+                BeatsPerMinute = 123,
+                Length = TimeSpan.FromMinutes(5.5),
+                ExternalLink = "https://example.com/enter-sandman"
             }
         });
 
