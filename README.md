@@ -1,27 +1,64 @@
-# Muzikos atlikėjų registravimo ir paieškos sistema
-Projektas – tai internetinė platforma, skirta muzikos atlikėjų registravimui, informacijos saugojimui ir tarpusavio ryšių (panašumo) atvaizdavimui, veikianti pagal principą, panašų į music-map.com.
-Sistema leidžia vartotojams kurti paskyras, prisijungti, registruotis, naršyti atlikėjus, atlikti paieška pagal atlikėjų informacija
-# Pagrindinės funkcijos
-1. Vartotojų autentifikacija
-•	Registracija naudojant el. paštą ir slaptažodį
-•	Prisijungimas / atsijungimas
-•	Vartotojo rolės (pvz., administratorius, registruotas vartotojas, neregistruotas vartotojas)
-2. Atlikėjų valdymas
-•	Naujo muzikos atlikėjo pridėjimas (administratorius)
-•	Vartotojo informacijos pridėjimas (savo informacija)
-•	Atlikėjo informacijos redagavimas ir šalinimas (administratorius)
-•	Vartotojo informacijos redagavimas ir šalinimas
-•	Duomenys: pavadinimas, žanras, kalba, aprašymas, nuorodos į platformas (Spotify, YouTube ir kt.)
-3. Paieška ir filtravimas
-•	Greita atlikėjų paieška pagal pavadinimą
-•	Filtravimas pagal žanrą, šalį ar populiarumą
-4. Administravimo dalis
-•	Vartotojų valdymas
-•	Netinkamo turinio šalinimas
-•	Statistikos peržiūra (registruotų atlikėjų, vartotojų skaičius ir pan.)
+# Muzikos atlikejų registravimo ir paieškos sistema
 
-# Technologinis įgyvendinimas
-•	Backend: c#, ASP.NET Core Web API (Universitete mokinomės)
-•	Duomenų bazė: SQL Server + Entity Framework (gal)
-•	Autentifikacija: JWT
-•	Frontend: React / Angular / Blazor / Flutter (nuspresime išbande technologijas)
+Projektas yra internetinė platforma muzikos atlikejų paieškai ir profilių peržiurai. Veikimo principas panašus i music-map.com. Sistema leidžia vartotojams registruotis, prisijungti ir naršyti atlikejus bei dainas.
+
+## Pagrindinės funkcijos
+
+- Registracija ir prisijungimas su el. paštu ir slaptažodžiu, „Remember me“ parinktimi.
+- Paskyros nustatymai: slaptažodžio keitimas ir paskyros ištrynimas.
+- Atlikejų paieška pagal pavadinima, su filtrais (žanras, kalba, aktyvumo metai) ir rikiavimu pagal populiaruma.
+- Atlikejo profilio peržiura: aprašymas, žanrai, šalis, aktyvumo metai, nuorodos i Spotify/YouTube, albumai, dainos, turai, komentarai.
+- Panašių atlikejų paieška (pasirenkami 3 atlikejai, grąžinamas panašiausio žanro atlikėjas).
+- Dainų paieška pagal pavadinima su filtrais (žanras, BPM), puslapiavimu ir „I’m feeling lucky“.
+- Profilio redagavimas: vardas, bio, kalba, žanrai, Spotify/YouTube nuorodos; albumų, dainų ir turu pridėjimas.
+- Komentarai profiliuose su like/dislike balsavimu; galima istrinti savo komentarus.
+- Mėgstamu atlikeju sekimas.
+
+## Technologijos
+
+- Backend: C#, ASP.NET Core Web API
+- Frontend: Blazor (Razor Components, Interactive Server)
+
+## Kaip atsisiųsti
+
+1. Klonuokite repozitorija:
+   - `git clone <repo-url>`
+2. Atidarykite sprendini Visual Studio arba VS Code.
+
+## Konfigūravimas
+
+Frontend API adresas nustatomas faile `Frontend/appsettings.json`:
+
+- `BackendUrl`: backend API bazinis URL.
+
+## Paleidimas
+
+Atidarykite dvi terminalo sesijas.
+
+### Backend
+
+```bash
+cd Backend
+dotnet run
+```
+
+### Frontend
+
+```bash
+cd Frontend
+dotnet run
+```
+
+## Naudojimas
+
+- Prisijunkite arba susikurkite paskyra.
+- Atlikejų paieška: naudokite paieškos laukeli ir filtrus.
+- Atlikejo profilis: peržiurėkite albumus, dainas, turus, komentarus; prisijungus galite pridėti i mėgstamus.
+- Profilio skiltyje redaguokite savo informacija ir pridėkite albumus/dainas/turus.
+- „Similar artist“ puslapyje pasirinkite 3 atlikejus ir gaukite panašu rezultata.
+
+## Testavimas
+
+Testavimo dokumentacija: https://docs.google.com/document/d/1XKPTNouZP_7VXh3ohMYDDGe7vasOOOnXCp0FTokN7IU/edit?usp=sharing
+
+
