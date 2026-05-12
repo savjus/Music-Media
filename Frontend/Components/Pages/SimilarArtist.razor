@@ -79,7 +79,7 @@
                 <p class="mb-1"><strong>Country:</strong> @_similarArtist.Country</p>
                 <p class="mb-0"><strong>Active from:</strong> @_similarArtist.ActiveFrom@if (_similarArtist.ActiveTo.HasValue){ <span>- @_similarArtist.ActiveTo</span> }</p>
                 <hr>
-                <NavLink href="@($"artist-profile/{_similarArtist.Id}")">
+                <NavLink href="@($"/artists/{_similarArtist.Id}")">
                     <button class="btn btn-success">View Profile</button>
                 </NavLink>
             </div>
