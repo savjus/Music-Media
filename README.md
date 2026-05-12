@@ -1,66 +1,64 @@
 # Muzikos atlikejų registravimo ir paieškos sistema
 
-Šis projektas yra internetinė platforma, skirta muzikos atlikejų registravimui, informacijos saugojimui ir tarpusavio ryšių (panašumo) atvaizdavimui. Veikimo principas panašus i music-map.com. Sistema leidžia vartotojams kurti paskyras, prisijungti, registruotis, naršyti atlikejus ir vykdyti paieška.
+Projektas yra internetinė platforma muzikos atlikejų paieškai ir profilių peržiurai. Veikimo principas panašus i music-map.com. Sistema leidžia vartotojams registruotis, prisijungti ir naršyti atlikejus bei dainas.
 
 ## Pagrindinės funkcijos
 
-- Vartotojų autentifikacija (registracija, prisijungimas, atsijungimas, rolės)
-- Atlikejų valdymas (kurti, redaguoti, šalinti; administratorius ir vartotojas)
-- Paieška ir filtravimas (pagal pavadinima, žanra, šali, populiaruma)
-- Administravimas (vartotojų valdymas, netinkamo turinio šalinimas, statistika)
+- Registracija ir prisijungimas su el. paštu ir slaptažodžiu, „Remember me“ parinktimi.
+- Paskyros nustatymai: slaptažodžio keitimas ir paskyros ištrynimas.
+- Atlikejų paieška pagal pavadinima, su filtrais (žanras, kalba, aktyvumo metai) ir rikiavimu pagal populiaruma.
+- Atlikejo profilio peržiura: aprašymas, žanrai, šalis, aktyvumo metai, nuorodos i Spotify/YouTube, albumai, dainos, turai, komentarai.
+- Panašių atlikejų paieška (pasirenkami 3 atlikejai, grąžinamas panašiausio žanro atlikėjas).
+- Dainų paieška pagal pavadinima su filtrais (žanras, BPM), puslapiavimu ir „I’m feeling lucky“.
+- Profilio redagavimas: vardas, bio, kalba, žanrai, Spotify/YouTube nuorodos; albumų, dainų ir turu pridėjimas.
+- Komentarai profiliuose su like/dislike balsavimu; galima istrinti savo komentarus.
+- Mėgstamu atlikeju sekimas.
 
 ## Technologijos
 
 - Backend: C#, ASP.NET Core Web API
-- Duomenų bazė: SQL Server + Entity Framework (planuojama)
-- Autentifikacija: JWT
-- Frontend: Blazor (esamas projektas), alternatyvos buvo React/Angular/Flutter
+- Frontend: Blazor (Razor Components, Interactive Server)
 
 ## Kaip atsisiųsti
 
-1. Atsisiųskite arba klonuokite repozitorija:
-	- `git clone <repo-url>`
+1. Klonuokite repozitorija:
+   - `git clone <repo-url>`
 2. Atidarykite sprendini Visual Studio arba VS Code.
 
 ## Konfigūravimas
 
-Pagrindiniai nustatymai yra faile `Backend/appsettings.json`:
+Frontend API adresas nustatomas faile `Frontend/appsettings.json`:
 
-- `ConnectionStrings`: SQL Server prisijungimas.
-- `Jwt`: raktas, issuer, audience, token galiojimo laikas.
-
-Jei naudojate atskiras aplinkas, koreguokite `Backend/appsettings.Development.json`.
-
-Frontend nustatymai yra faile `Frontend/appsettings.json` (pvz., API bazinis adresas).
+- `BackendUrl`: backend API bazinis URL.
 
 ## Paleidimas
 
+Atidarykite dvi terminalo sesijas.
+
 ### Backend
 
-1. Pereikite i `Backend` projekta.
-2. Paleiskite:
-	- `dotnet run`
+```bash
+cd Backend
+dotnet run
+```
 
 ### Frontend
 
-1. Pereikite i `Frontend` projekta.
-2. Paleiskite:
-	- `dotnet run`
+```bash
+cd Frontend
+dotnet run
+```
 
 ## Naudojimas
 
-- Užsiregistruokite arba prisijunkite.
-- Naudokite paieška atlikėjų paieškai.
-- Per profilio puslapius redaguokite savo informacija.
-- Administratorius gali valdyti atlikejus ir vartotojus.
+- Prisijunkite arba susikurkite paskyra.
+- Atlikejų paieška: naudokite paieškos laukeli ir filtrus.
+- Atlikejo profilis: peržiurėkite albumus, dainas, turus, komentarus; prisijungus galite pridėti i mėgstamus.
+- Profilio skiltyje redaguokite savo informacija ir pridėkite albumus/dainas/turus.
+- „Similar artist“ puslapyje pasirinkite 3 atlikejus ir gaukite panašu rezultata.
 
 ## Testavimas
 
 Testavimo dokumentacija: https://docs.google.com/document/d/1XKPTNouZP_7VXh3ohMYDDGe7vasOOOnXCp0FTokN7IU/edit?usp=sharing
 
-Jei norite pridėti .doc/.docx faila i repozitorija:
 
-1. Atsisiųskite dokumenta is Google Docs kaip .docx.
-2. Sukurkite kataloga `docs/testing/` (jei dar nera).
-3. Idėkite faila, pvz. `docs/testing/Testavimas.docx`.
-4. Itraukite ji i versiju kontrole (git add/commit).
