@@ -62,3 +62,9 @@ dotnet run
 Testavimo dokumentacija: https://docs.google.com/document/d/1XKPTNouZP_7VXh3ohMYDDGe7vasOOOnXCp0FTokN7IU/edit?usp=sharing
 
 
+## Kūrėjai
+IFIN-4/3 Grupės "Tiesiai į penketą" nariai 
+Salvijus Poška
+Adomas Rizk
+Dovydas Birbalas
+
